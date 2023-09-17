@@ -1,32 +1,46 @@
-﻿using Silk.NET.Input;
-using Silk.NET.Maths;
+﻿using System.Diagnostics;
 using Silk.NET.Windowing;
-internal class Program
+using VoyagerEngine.Core;
+using VoyagerEngine.ECS;
+using VoyagerEngine.Input;
+
+namespace VoyagerEngine
 {
-    private static IWindow _window;
-    private static IInputContext _input;
-    private static void Main(string[] args)
+    public static class VoyagerEngine
     {
-        WindowOptions options = WindowOptions.Default with
+        internal static VoyagerEngine_Internal Instance;
+        public static void Main(string[] args)
         {
-            Size = new Vector2D<int>(800, 600),
-            Title = "Mystery Dungeon"
-        };
-        _window = Window.Create(options);
 
-        _window.Load += OnLoad;
-        _window.Update += OnUpdate;
-        _window.Render += OnRender;
-
-        _window.Run();
-        //_window.Close();
+        }
+        public static void Start(IVoyagerGame game)
+        {
+            Start(game, WindowOptions.Default);
+        }
+        public static void Start(IVoyagerGame game, WindowOptions windowOptions)
+        {
+            Instance = new VoyagerEngine_Internal(game, windowOptions);
+        }
+        public static void RegisterService(IService service)
+        {
+            Instance.RegisterService(service);
+        }
+        public static void RequestController(IVoyagerInput_Listener listener)
+        {
+            Instance.Input.Request(listener);
+        }
+        public static void CancelRequestController(IVoyagerInput_Listener listener)
+        {
+            Instance.Input.CancelRequest(listener);
+        }
     }
-    private static void OnLoad() {
-        _input = _window.CreateInput();
+    public static class Print
+    {
+        public static void Log(string message)
+        {
+            Console.WriteLine(message);
+            Trace.WriteLine(message);
+        }
     }
-
-    private static void OnUpdate(double deltaTime) { }
-
-    private static void OnRender(double deltaTime) { }
 
 }
