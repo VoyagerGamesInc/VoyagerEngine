@@ -1,37 +1,42 @@
 using Silk.NET.Input;
 namespace VoyagerEngine.Input
 {
-    internal class VoyagerInput_Keyboard : VoyagerInput_Device<IKeyboard>, IVoyagerInput_Controller
+    internal class Input_Keyboard : Input_Device<IKeyboard>, IInput_Controller
     {
         private HashSet<Key> heldKeys = new();
-        internal VoyagerInput_Keyboard(IKeyboard device) : base(device)
+        internal Input_Keyboard(IKeyboard device) : base(device)
         {
+            Device.KeyDown -= Device_KeyDown;
             Device.KeyDown += Device_KeyDown;
+
+            Device.KeyUp -= Device_KeyUp;
             Device.KeyUp += Device_KeyUp;
+
+            Device.KeyChar -= Device_KeyChar;
             Device.KeyChar += Device_KeyChar;
         }
 
         private void Device_KeyChar(IKeyboard device, char character)
         {
-            Print.Log($"Key Char: {character}");
-            FrameInputs.Add(new InputValue_Button(character.ToString(), true));
+            FrameInputs.Add(new InputValue_Char(character));
+            WasUpdatedThisFrame = true;
         }
 
         private void Device_KeyUp(IKeyboard device, Key key, int value)
         {
-            Print.Log($"Key Up: {key} - {value}");
-            FrameInputs.Add(new InputValue_Button(key.ToString(), true));
+            FrameInputs.Add(new InputValue_Key(key, false));
             heldKeys.Remove(key);
+            WasUpdatedThisFrame = true;
         }
 
         private void Device_KeyDown(IKeyboard device, Key key, int value)
         {
-            Print.Log($"Key Down: {key} - {value}");
             if (!heldKeys.Contains(key))
             {
-                FrameInputs.Add(new InputValue_Button(key.ToString(), true));
+                FrameInputs.Add(new InputValue_Key(key, true));
             }
             heldKeys.Add(key);
+            WasUpdatedThisFrame = true;
         }
     }
 }

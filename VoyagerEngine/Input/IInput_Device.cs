@@ -2,30 +2,30 @@ using Silk.NET.Input;
 
 namespace VoyagerEngine.Input
 {
-    public interface IVoyagerInput_Device
+    public interface IInput_Device
     {
         bool WasUpdatedThisFrame { get; set; }
         bool Disconnected { get; set; }
-        List<IVoyagerInput_Value> FrameInputs { get; set; }
-        IVoyagerInput_Listener Listener { get; set; }
+        List<IInput_Value> FrameInputs { get; set; }
+        IInput_Listener Listener { get; set; }
         IInputDevice InputDevice { get; }
 
-        void PostUpdate();
-        void SetListener(IVoyagerInput_Listener listener);
+        void ProcessFrame();
+        void SetListener(IInput_Listener listener);
         void Update();
         void WasRemoved();
     }
-    internal abstract class VoyagerInput_Device<T> : IVoyagerInput_Device where T : IInputDevice
+    internal abstract class Input_Device<T> : IInput_Device where T : IInputDevice
     {
         public bool WasUpdatedThisFrame { get; set; }
         public bool Disconnected { get; set; }
-        public IVoyagerInput_Listener Listener { get; set; }
-        public List<IVoyagerInput_Value> FrameInputs { get; set; } = new();
+        public IInput_Listener Listener { get; set; }
+        public List<IInput_Value> FrameInputs { get; set; } = new();
         public IInputDevice InputDevice => Device;
 
         protected T Device;
 
-        internal VoyagerInput_Device(T device)
+        internal Input_Device(T device)
         {
             Device = device;
         }
@@ -35,7 +35,7 @@ namespace VoyagerEngine.Input
 
         }
 
-        public void SetListener(IVoyagerInput_Listener listener)
+        public void SetListener(IInput_Listener listener)
         {
             Listener = listener;
             listener.Devices.Add(this);
@@ -44,7 +44,7 @@ namespace VoyagerEngine.Input
         {
             Listener.Devices.Remove(this);
         }
-        public void PostUpdate()
+        public void ProcessFrame()
         {
             if (Listener != null && FrameInputs.Count > 0)
             {
