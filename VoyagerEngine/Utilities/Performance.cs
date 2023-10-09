@@ -46,7 +46,7 @@ namespace VoyagerEngine
         {
             double cAvg = cpuTime / cpuCount;
             double gAvg = gpuTime / gpuCount;
-            Log.Write($"[CPU: {cpuCount} | {cAvg.ToString("0")} ns] [GPU: {gpuCount} | {gAvg.ToString("0")} ns]");
+            Debug.Log($"[CPU: {cpuCount} ticks | {cAvg.ToString("0")} ns] [GPU: {gpuCount} ticks | {gAvg.ToString("0")} ns]");
             cpuTime = 0;
             gpuTime = 0;
             gpuCount = 0;

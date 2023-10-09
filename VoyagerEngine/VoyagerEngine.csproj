@@ -9,17 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Rendering\Shaders\frag.glsl" />
-    <None Remove="Rendering\Shaders\vert.glsl" />
+    <None Remove="Rendering\ShaderFiles\frag.glsl" />
+    <None Remove="Rendering\ShaderFiles\vert.glsl" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Rendering\Shaders\frag.glsl">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    <EmbeddedResource Include="Rendering\ShaderFiles\frag.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CustomToolNamespace></CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="Rendering\Shaders\vert.glsl">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    <EmbeddedResource Include="Rendering\ShaderFiles\vert.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CustomToolNamespace></CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>

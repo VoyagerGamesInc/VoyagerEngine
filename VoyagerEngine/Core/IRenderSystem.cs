@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace VoyagerEngine.Core
 {
-    public interface IService
+    internal interface IRenderSystem : ISystem
     {
-        void Init();
+        void Render(in EntityRegistry registry);
     }
 }

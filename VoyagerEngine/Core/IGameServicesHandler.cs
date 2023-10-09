@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace VoyagerEngine.Core
 {
-    public interface IService
+    internal interface IGameServicesHandler
     {
-        void Init();
+        void OnServicesInit(GameServices gameServices);
     }
 }

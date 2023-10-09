@@ -1,7 +1,7 @@
 using Silk.NET.Input;
 namespace VoyagerEngine.Input
 {
-    internal class Input_Keyboard : Input_Device<IKeyboard>, IInput_Controller
+    internal class Input_Keyboard : Input_Device<IKeyboard>
     {
         private HashSet<Key> heldKeys = new();
         internal Input_Keyboard(IKeyboard device) : base(device)

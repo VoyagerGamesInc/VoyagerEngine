@@ -19,7 +19,7 @@ namespace VoyagerEngine.Utilities
                 }
                 else
                 {
-                    Log.Write($"Resource not found: \"{resourcePath}\".");
+                    Debug.Log($"Resource not found: \"{resourcePath}\".");
                 }
             }
             return "";

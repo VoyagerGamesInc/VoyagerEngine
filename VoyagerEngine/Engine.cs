@@ -1,9 +1,10 @@
 ﻿using Silk.NET.Windowing;
-using Silk.NET.Input;
 using Silk.NET.OpenGLES;
 using VoyagerEngine.Core;
 using VoyagerEngine.Input;
 using VoyagerEngine.Rendering;
+using VoyagerEngine.Attributes;
+
 namespace VoyagerEngine
 {
     public class Engine
@@ -11,103 +12,89 @@ namespace VoyagerEngine
         internal static Engine Instance;
         public static void Main(string[] args)
         {
-
         }
-        public static void Start(IGame game)
+        public static void Start<T>(WindowOptions windowOptions, params string[] args) where T : Game, new ()
         {
             if (Instance != null)
                 return;
-
-            Start(game, WindowOptions.Default);
+            T game = new T();
+            new Engine(game, windowOptions, args);
         }
-        public static void Start(IGame game, WindowOptions windowOptions)
+        public static void SetGameMode<T>() where T : GameMode, new ()
         {
-            if (Instance != null)
-                return;
-
-            new Engine(game, windowOptions);
+            Instance.SetGameMode_Internal<T>();
         }
-        public static void RegisterService(IService service)
+        public static void RegisterService<T>(T service) where T : IService
         {
-            Instance.RegisterService(service);
+            if(Instance._gameMode != null)
+            {
+                Instance._gameMode._gameServices.RegisterService(service);
+            }
+            else
+            {
+                Instance._globalServices.RegisterService(service);
+            }
         }
-        public static void RequestController(IInput_Listener listener)
+        public static T GetService<T>() where T : IService
         {
-            Instance.Input.Request(listener);
+            return Instance._globalServices.GetService<T>();
         }
-        public static void CancelRequestController(IInput_Listener listener)
+        public static bool HasService(Type t)
         {
-            Instance.Input.CancelRequest(listener);
-
+            if (Instance._gameMode != null && Instance._gameMode._gameServices.HasService(t))
+            {
+                return true;
+            }
+            return Instance._globalServices.HasService(t);
         }
 
-        private IGame _game;
-        private IWindow _window;
-        private WindowOptions _windowOptions;
 
-        internal InputManager Input;
-        internal Renderer Renderer;
+        private Game _game;
+        private GameServices _globalServices = new GameServices();
+        private Performance _performance = new Performance();
 
-        internal Dictionary<Type, IService> Services = new();
-
-        private Performance _fpsTracker;
-        internal Engine(IGame game, WindowOptions windowOptions)
+        private GameMode? _gameMode;
+        internal Engine(Game game, WindowOptions windowOptions, params string[] args)
         {
             Instance = this;
             _game = game;
-            _windowOptions = windowOptions with
-            {
-                VSync = false
-            };
-            _window = Window.Create(_windowOptions);
-            _fpsTracker = new();
 
-            Input = new InputManager();
-            Renderer = new Renderer(_window);
+            RegisterService(new RenderService(out IWindow _window, windowOptions));
+            RegisterService(new InputService());
 
-            _window.Load += OnLoad;
-            _window.Update += OnUpdate;
-            _window.Render += OnRender;
+            _globalServices.OnAddServices(_game);
+
+            _window.Load += Init;
+            _window.Update += Tick;
+            _window.Render += Render;
             _window.Run();
-
         }
-        private void OnLoad()
+        private void Init()
         {
-            Input.OnLoad(_window.CreateInput());
-            Renderer.OnLoad(_window.CreateOpenGLES());
-            _game.OnLoad();
+            _game.StartGame();
         }
-
-        private void OnRender(double deltaTime)
+       
+        private void Tick(double deltaTime)
         {
-            _fpsTracker.StartGpu();
-            Renderer.OnRender();
-            _fpsTracker.StopGpu();
+            _performance.StartCpu();
+            _gameMode?.Tick(deltaTime);
+            _performance.StopCpu();
         }
 
-        private void OnUpdate(double deltaTime)
+        private void Render(double deltaTime)
         {
-            _fpsTracker.StartCpu();
-            Input.OnUpdate(deltaTime);
-            _game.OnUpdate(deltaTime);
-            _fpsTracker.StopCpu();
+            _performance.StartGpu();
+            _gameMode?.Render(deltaTime);
+            _performance.StopGpu();
         }
-        internal void RegisterService<T>(T service) where T : IService
+        private void SetGameMode_Internal<T>() where T : GameMode, new()
         {
-            Type serviceType = typeof(T);
-            if (!Services.ContainsKey(serviceType))
+            if(_gameMode != null)
             {
-                Services.Add(serviceType, service);
+                _gameMode.CleanUp();
             }
-        }
-        internal IService GetService<T>() where T : IService
-        {
-            if (Services.TryGetValue(typeof(T), out IService service))
-            {
-                return service;
-            }
-            Log.Write("Attempted to retrieve an unregistered service.");
-            return null;
+            _gameMode = new T();
+            _gameMode.StartMode_Internal();
         }
     }
 }

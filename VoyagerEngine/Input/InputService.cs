@@ -1,9 +1,13 @@
 using Silk.NET.Input;
+using VoyagerEngine.Attributes;
+using VoyagerEngine.Core;
+using VoyagerEngine.Rendering;
 using VoyagerEngine.Utilities;
 
 namespace VoyagerEngine.Input
 {
-    public class InputManager
+    [ServiceDependency(typeof(RenderService))]
+    public class InputService : IService
     {
         private IInputContext _inputContext;
         private List<IInput_Device> _idleDevices = new();
@@ -11,13 +15,36 @@ namespace VoyagerEngine.Input
         private List<IInput_Listener> _requestingListeners = new();
 
         private Dictionary<string, IInput_Listener> disconnectedDevices = new();
-
-        internal void OnLoad(IInputContext inputContext)
+        public void Init()
         {
-            _inputContext = inputContext;
+            RenderService windowService = Engine.GetService<RenderService>();
+            _inputContext = windowService.Window.CreateInput();
             CollectDevices();
             _inputContext.ConnectionChanged += OnDeviceChange;
+            windowService.Window.Update += Tick;
         }
+        internal void Tick(double deltaTime)
+        {
+            if (_idleDevices.Count == 0)
+            {
+                CollectDevices();
+            }
+            foreach (var device in _idleDevices)
+            {
+                if (!device.Disconnected)
+                {
+                    device.Update();
+
+                    if (_requestingListeners.Count > 0)
+                    {
+                        TrySettingDevice(device);
+                    }
+
+                    device.ProcessFrame();
+                }
+            }
+        }
+
         private void CollectDevices()
         {
             List<IInputDevice> devices = new List<IInputDevice>();
@@ -32,30 +59,6 @@ namespace VoyagerEngine.Input
             }
         }
 
-        internal void OnUpdate(double deltaTime)
-        {
-            if (_idleDevices.Count == 0)
-            {
-                CollectDevices();
-            }
-            foreach (var device in _idleDevices)
-            {
-                if (!device.Disconnected)
-                {
-                    device.Update();
-
-                    if (_requestingListeners.Count > 0)
-                    {
-                        if (device is IInput_Controller controller)
-                        {
-                           TrySettingController(controller);
-                        }
-                    }
-
-                    device.ProcessFrame();
-                }
-            }
-        }
 
         private void OnDeviceChange(IInputDevice device, bool change)
         {
@@ -103,12 +106,12 @@ namespace VoyagerEngine.Input
             voyagerDevice = null;
             return false;
         }
-        private void TrySettingController(IInput_Controller controller)
+        private void TrySettingDevice(IInput_Device device)
         {
-            if (controller.Listener == null && controller.WasUpdatedThisFrame)
+            if (device.Listener == null && device.WasUpdatedThisFrame)
             {
-                IInput_Listener listener = _requestingListeners.GetFirst();
-                controller.SetListener(listener);
+                IInput_Listener listener = _requestingListeners[0];
+                device.SetListener(listener);
                 _requestingListeners.Remove(listener);
 
                 foreach (var kv in disconnectedDevices)
@@ -133,7 +136,7 @@ namespace VoyagerEngine.Input
                 }
             }
         }
-        internal void Request(IInput_Listener listener)
+        public void Request(IInput_Listener listener)
         {
             if (!_requestingListeners.Contains(listener))
             {

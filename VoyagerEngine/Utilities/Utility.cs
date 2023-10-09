@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Input;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -11,20 +12,16 @@ namespace VoyagerEngine.Utilities
 {
     internal static class Utility
     {
-        internal static void FromColor(this ref Vector4 vector, Color color)
+        internal static Vector4 NormalizeToVector4(this Color color)
         {
-            vector.X = color.R / 256f;
-            vector.Y = color.G / 256f;
-            vector.Z = color.B / 256f;
-            vector.W = color.A / 256f;
+            return new Vector4(color.R / 256f,
+                color.G / 256f,
+                color.B / 256f,
+                color.A / 256f);
         }
-        public static T GetLast<T>(this List<T> list)
+        internal static HashSet<T> ParamsToHashSet<T,TConstraint>(this T[] array) where TConstraint : IComponent
         {
-            return list[list.Count - 1];
-        }
-        public static T GetFirst<T>(this List<T> list)
-        {
-            return list[0];
+            return new HashSet<T>(array).Where(obj => obj is IComponent).ToHashSet();
         }
     }
 }

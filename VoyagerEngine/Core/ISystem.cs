@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VoyagerEngine.Core
 {
-    public interface IService
+    public interface ISystem
     {
         void Init();
     }
