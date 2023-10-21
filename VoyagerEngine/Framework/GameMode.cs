@@ -1,16 +1,15 @@
 ﻿using VoyagerEngine.Rendering;
 
-namespace VoyagerEngine.Core
+namespace VoyagerEngine.Framework
 {
-    public abstract class GameMode : IGameServicesHandler, IGameSystemsHandler
+    public abstract class GameMode : IGameSystemsHandler
     {
-        internal GameServices _gameServices = new GameServices();
-        internal GameSystems _gameSystems = new GameSystems();
-        /// <summary>
-        /// Register Services Here
-        /// </summary>
-        public virtual void OnServicesInit(GameServices gameServices) { }
+        internal GameSystems _gameSystems;
 
+        public GameMode()
+        {
+            _gameSystems = new GameSystems(this);
+        }
         /// <summary>
         /// Register render systems here
         /// </summary>
@@ -27,9 +26,7 @@ namespace VoyagerEngine.Core
 
         internal void StartMode_Internal()
         {
-            _gameServices.Init();
-
-            _gameSystems.RegisterSystem<RenderingSystem>();
+            OnSystemsInit(_gameSystems);
             _gameSystems.Init();
             StartMode();
         }
@@ -41,6 +38,10 @@ namespace VoyagerEngine.Core
         internal void Render(double deltaTime)
         {
             _gameSystems.Render(deltaTime);
+        }
+
+        public void RegisterSystems(in GameSystems gameSystems)
+        {
         }
     }
 }

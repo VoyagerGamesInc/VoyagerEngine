@@ -7,20 +7,20 @@ namespace VoyagerEngine.Input
         Pressed,
         Released
     }
-    public interface IInput_Value
+    public interface IInputPayload
     {
     }
-    public abstract class Input_Value : IInput_Value
+    public abstract class InputPayload : IInputPayload
     {
         public string Name { get; private set; }
         public InputStates State { get; private set; }
-        public Input_Value(string name, InputStates state)
+        public InputPayload(string name, InputStates state)
         {
             Name = name;
             State = state;
         }
     }
-    public class InputValue_Stick : Input_Value
+    public class InputValue_Stick : InputPayload
     {
         public float X { get; private set; }
         public float Y { get; private set; }
@@ -34,7 +34,7 @@ namespace VoyagerEngine.Input
             return $"Stick: {Name} - ({X},{Y}) - {State}";
         }
     }
-    public class InputValue_Float : Input_Value
+    public class InputValue_Float : InputPayload
     {
         public float Value { get; private set; }
         public InputValue_Float(string name, float value) : base(name, InputStates.Hold)
@@ -46,7 +46,7 @@ namespace VoyagerEngine.Input
             return $"Float: {Name} - ({Value}) - {State}";
         }
     }
-    public class InputValue_Key : Input_Value
+    public class InputValue_Key : InputPayload
     {
         public Key Key { get; private set; }
         public InputValue_Key(Key key, bool pressed) : base(key.ToString(), pressed ? InputStates.Pressed : InputStates.Released)
@@ -58,7 +58,7 @@ namespace VoyagerEngine.Input
             return $"Key: {Key} - {State}";
         }
     }
-    public class InputValue_Button : Input_Value
+    public class InputValue_Button : InputPayload
     {
         public InputValue_Button(string name, bool pressed) : base(name, pressed ? InputStates.Pressed : InputStates.Released)
         {
@@ -68,7 +68,7 @@ namespace VoyagerEngine.Input
             return $"Button: {Name} - {State}";
         }
     }
-    public class InputValue_Char : Input_Value
+    public class InputValue_Char : InputPayload
     {
         public InputValue_Char(char name) : base(name.ToString(), InputStates.Pressed)
         {

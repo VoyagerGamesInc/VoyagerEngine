@@ -1,98 +1,88 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Silk.NET.Maths;
-using Silk.NET.OpenGLES;
 using VoyagerEngine.Attributes;
-using VoyagerEngine.Core;
-using static VoyagerEngine.Rendering.RenderService;
+using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Rendering
 {
-    [ServiceDependency(typeof(RenderService))]
-    internal class RenderingSystem : IRenderSystem
+    [RequiresService(typeof(RenderService))]
+    public class RenderingSystem : IRenderSystem
     {
-        internal struct RenderParams
-        {
-            internal Vector4 cameraParams; //x,y - position, z,w
-            internal Vector4 viewportParams; //x,y - size
-        }
-
-        private RenderParams _renderParams = new RenderParams();
-
         private RenderService renderService;
-
-        public void Init()
+        public RenderingSystem()
         {
             renderService = Engine.GetService<RenderService>();
             renderService.SetClearColor(Color.CornflowerBlue);
 
-            Shader shader = Shader.DefaultSpriteShader();
-            renderService.RegisterShader(ref shader);
+            renderService.RegisterShader(Shader.DefaultSpriteShader());
 
-            renderService.Window.Resize += OnWindowResized;
-            _renderParams.viewportParams.X = renderService.Window.Size.X;
-            _renderParams.viewportParams.Y = renderService.Window.Size.Y;
+            Entity viewportEntity = EntityRegistry.CreateEntity();
+            ViewportComponent viewportComponent = viewportEntity.AddComponent<ViewportComponent>();
+            viewportComponent.UpdateFlag |= UpdateFlags.Viewport;
+            //UpdateViewport(viewportEntity, viewportComponent);
+
+            Entity cameraEntity = EntityRegistry.CreateEntity();
+            CameraComponent cameraComponent = cameraEntity.AddComponent<CameraComponent>();
         }
-        private void OnWindowResized(Vector2D<int> size)
-        {
-            _renderParams.viewportParams.X = size.X;
-            _renderParams.viewportParams.Y = size.Y;
-        }
-        static void InitializeRenderComponent(Entity entity, RenderComponent component)
-        {
-            Debug.Log("Hello 1");
-        }
-        static void RenderComponent(Entity entity, RenderComponent component)
-        {
-            Debug.Log("Hello 2");
-            //Shader shader = sprite.Shader;
-            //_gl.UseProgram(shader.Program);
-            //UpdateUniforms(shader.Program);
-            //sprite.SetVariables(_gl);
-            //_gl.BindVertexArray(sprite.VAO);
-            //_gl.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
-        }
+
         public void Render(in EntityRegistry registry)
         {
-            registry.View<RenderComponent>(InitializeRenderComponent,typeof(InitializeRendererFlag));
-            registry.View<RenderComponent>(RenderComponent);
+            renderService.Clear();
+            //registry.View<ViewportComponent>(UpdateViewport);
+            registry.View<CameraComponent>(UpdateCamera);
+            registry.View<RenderComponent,InitializeRendererComponent>(InitializeRenderer);
+            registry.View<RenderComponent>(Render);
         }
-        private void UpdateUniforms(RenderComponent renderComponent, GL gl)
+        private void InitializeRenderer(Entity entity, RenderComponent renderComponent, InitializeRendererComponent initializeFlag)
         {
-            int windowLoc = gl.GetUniformLocation(renderComponent.Program, "window");
-            if (windowLoc != -1)
-                gl.Uniform4(windowLoc, _renderParams.viewportParams);
-
-            int cameraLoc = gl.GetUniformLocation(renderComponent.Program, "camera");
-            if (cameraLoc != -1)
-                gl.Uniform4(cameraLoc, _renderParams.cameraParams);
+            renderService.GenerateVertexBuffer(renderComponent.Verts, out renderComponent.VAO, out renderComponent.VBO);
+            renderService.GetProgram(renderComponent.ShaderName, out renderComponent.Program);
+            //UpdateComponentVariables(renderComponent, renderService);
+            entity.RemoveComponent<InitializeRendererComponent>();
         }
-        internal void UpdateVariables(RenderComponent renderComponent, GL gl)
+        public void Render(Entity entity, RenderComponent renderComponent)
         {
-            if (renderComponent.UpdateFlags.HasFlag(UpdateFlags.Verts))
-            {
-                gl.BindBuffer(BufferTargetARB.ArrayBuffer, renderComponent.VBO);
-                gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, new ReadOnlySpan<float>(renderComponent.Verts));
-            }
-            if (renderComponent.UpdateFlags.HasFlag(UpdateFlags.Position))
-            {
-                int positionUniformLoc = gl.GetUniformLocation(renderComponent.Program, "position");
-                if (positionUniformLoc != -1)
-                {
-                    gl.Uniform2(positionUniformLoc, renderComponent.Position);
-                }
-            }
+            //UpdateComponentVariables(renderComponent, renderService);
+            renderService.DrawQuad(renderComponent.Program, renderComponent.VAO);
+        }
 
-            if (renderComponent.UpdateFlags.HasFlag(UpdateFlags.Color))
+        private void UpdateViewport(Entity entity, ViewportComponent viewportComponent)
+        {
+            if (viewportComponent.UpdateFlag.HasFlag(UpdateFlags.Viewport))
             {
-                int colorUniformLoc = gl.GetUniformLocation(renderComponent.Program, "color");
-                if (colorUniformLoc != -1)
-                {
-                    gl.Uniform4(colorUniformLoc, renderComponent.NormalizedColor);
-                }
+                viewportComponent.Size = FromVector2D(Engine.GetWindow().Size);
+                renderService.SetUniforms("viewport", viewportComponent.Size);
             }
-
-            renderComponent.UpdateFlags = UpdateFlags.None;
+            viewportComponent.UpdateFlag = UpdateFlags.None;
+        }
+        private void UpdateCamera(Entity entity, CameraComponent cameraComponent)
+        {
+            if (cameraComponent.UpdateFlag.HasFlag(UpdateFlags.Camera))
+            {
+            }
+            cameraComponent.UpdateFlag = UpdateFlags.None;
+        }
+        private static void UpdateComponentVariables(RenderComponent renderComponent, RenderService renderService)
+        {
+            if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Verts))
+            {
+                renderService.UpdateVertexBuffer(renderComponent.Verts, renderComponent.VBO);
+            }
+            if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Position))
+            {
+                renderService.SeVertexAttrib("position", renderComponent.Program, renderComponent.Position);
+            }
+            if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Texture))
+            {
+                renderService.SetVertexAttrib("color", renderComponent.Program, renderComponent.NormalizedColor);
+            }
+            renderComponent.UpdateFlag = UpdateFlags.None;
+        }
+        private static Vector2 FromVector2D(Silk.NET.Maths.Vector2D<int> from)
+        {
+            return new Vector2(from.X, from.Y);
         }
     }
 }
+
+

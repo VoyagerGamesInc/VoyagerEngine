@@ -2,25 +2,23 @@ using Silk.NET.Input;
 
 namespace VoyagerEngine.Input
 {
-    public interface IInput_Device
+    public interface IInputController
     {
         bool WasUpdatedThisFrame { get; set; }
-        bool Disconnected { get; set; }
-        List<IInput_Value> FrameInputs { get; set; }
-        IInput_Listener Listener { get; set; }
+        List<IInputPayload> FrameInputs { get; set; }
+        IInputListener Listener { get; set; }
         IInputDevice InputDevice { get; }
 
         void ProcessFrame();
-        void SetListener(IInput_Listener listener);
+        void SetListener(IInputListener listener);
         void Update();
         void WasRemoved();
     }
-    internal abstract class Input_Device<T> : IInput_Device where T : IInputDevice
+    internal abstract class Input_Device<T> : IInputController where T : IInputDevice
     {
         public bool WasUpdatedThisFrame { get; set; }
-        public bool Disconnected { get; set; }
-        public IInput_Listener Listener { get; set; }
-        public List<IInput_Value> FrameInputs { get; set; } = new();
+        public IInputListener Listener { get; set; }
+        public List<IInputPayload> FrameInputs { get; set; } = new();
         public IInputDevice InputDevice => Device;
 
         protected T Device;
@@ -35,7 +33,7 @@ namespace VoyagerEngine.Input
 
         }
 
-        public void SetListener(IInput_Listener listener)
+        public void SetListener(IInputListener listener)
         {
             Listener = listener;
             listener.Devices.Add(this);

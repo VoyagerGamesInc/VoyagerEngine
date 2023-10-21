@@ -1,7 +1,7 @@
 ﻿using VoyagerEngine.Attributes;
 using VoyagerEngine.Rendering;
 
-namespace VoyagerEngine.Core
+namespace VoyagerEngine.Framework
 {
     public class GameSystems
     {
@@ -12,29 +12,16 @@ namespace VoyagerEngine.Core
 
         private List<ITickingSystem> tickingSystems = new List<ITickingSystem>();
         private List<IRenderSystem> renderSystems = new List<IRenderSystem>();
-        private Action<GameSystems>? onInit;
+        private IGameSystemsHandler handler;
 
-        public GameSystems()
+        internal GameSystems(IGameSystemsHandler handler) : base()
         {
             Instance = this;
-        }
-        internal void OnAddSystems(IGameSystemsHandler handler)
-        {
-            onInit -= handler.OnSystemsInit;
-            onInit += handler.OnSystemsInit;
+            this.handler = handler;
         }
         internal void Init()
         {
-            onInit?.Invoke(this);
-            foreach (ITickingSystem tickingSystem in tickingSystems)
-            {
-                tickingSystem.Init();
-            }
-
-            foreach (IRenderSystem renderSystems in renderSystems)
-            {
-                renderSystems.Init();
-            }
+            handler.RegisterSystems(this);
         }
         internal void Tick(double deltaTime)
         {
@@ -51,16 +38,16 @@ namespace VoyagerEngine.Core
                 system.Render(in entityRegistry);
             }
         }
-        internal void RegisterSystem<T>() where T : class, ISystem, new()
+        public void RegisterSystem<T>() where T : class, ISystem, new()
         {
-            GameServices.CheckIfServiceExists<T, ServiceDependencyAttribute>();
-            if (typeof(T) is ITickingSystem tickingSystem)
+            GameServices.CheckIfServiceExists<T, RequiresServiceAttribute>();
+            if (typeof(T).IsAssignableTo(typeof(ITickingSystem)))
             {
-                tickingSystems.Add(tickingSystem);
+                tickingSystems.Add(new T() as ITickingSystem);
             }
-            else if (typeof(T) is IRenderSystem renderSystem)
+            else if (typeof(T).IsAssignableTo(typeof(IRenderSystem)))
             {
-                renderSystems.Add(renderSystem);
+                renderSystems.Add(new T() as IRenderSystem);
             }
         }
     }

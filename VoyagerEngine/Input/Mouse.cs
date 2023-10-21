@@ -4,9 +4,9 @@ using System.Numerics;
 
 namespace VoyagerEngine.Input
 {
-    internal class Input_Mouse : Input_Device<IMouse>
+    internal class Mouse : Input_Device<IMouse>
     {
-        internal Input_Mouse(IMouse device) : base(device)
+        internal Mouse(IMouse device) : base(device)
         {
             Device.DoubleClickRange = 10;
             Device.DoubleClickTime = 150;

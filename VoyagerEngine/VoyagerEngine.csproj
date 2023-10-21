@@ -6,29 +6,34 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Rendering\ShaderFiles\frag.glsl" />
-    <None Remove="Rendering\ShaderFiles\vert.glsl" />
+    <None Remove="Rendering\GLSL\frag.glsl" />
+    <None Remove="Rendering\GLSL\vert.glsl" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Rendering\ShaderFiles\frag.glsl">
+    <EmbeddedResource Include="Rendering\GLSL\frag.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CustomToolNamespace></CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="Rendering\ShaderFiles\vert.glsl">
+    <EmbeddedResource Include="Rendering\GLSL\vert.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CustomToolNamespace></CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Silk.NET.Input" Version="2.17.1" />
     <PackageReference Include="Silk.NET.OpenAL" Version="2.17.1" />
-    <PackageReference Include="Silk.NET.OpenGLES" Version="2.17.1" />
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.21.1.2" />
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.17.1" />
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.1" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

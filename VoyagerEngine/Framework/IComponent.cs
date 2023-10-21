@@ -1,4 +1,4 @@
-﻿namespace VoyagerEngine.Core
+﻿namespace VoyagerEngine.Framework
 {
     public interface IComponent
     {

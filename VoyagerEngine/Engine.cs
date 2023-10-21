@@ -1,9 +1,10 @@
-﻿using Silk.NET.Windowing;
-using Silk.NET.OpenGLES;
-using VoyagerEngine.Core;
-using VoyagerEngine.Input;
-using VoyagerEngine.Rendering;
-using VoyagerEngine.Attributes;
+﻿using Silk.NET.OpenAL;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.Input;
+using Silk.NET.Windowing;
+using VoyagerEngine.Framework;
+using System.Reflection;
 
 namespace VoyagerEngine
 {
@@ -18,83 +19,120 @@ namespace VoyagerEngine
             if (Instance != null)
                 return;
             T game = new T();
-            new Engine(game, windowOptions, args);
+            Engine engine = new Engine(game, windowOptions, args);
         }
         public static void SetGameMode<T>() where T : GameMode, new ()
         {
             Instance.SetGameMode_Internal<T>();
         }
-        public static void RegisterService<T>(T service) where T : IService
-        {
-            if(Instance._gameMode != null)
-            {
-                Instance._gameMode._gameServices.RegisterService(service);
-            }
-            else
-            {
-                Instance._globalServices.RegisterService(service);
-            }
-        }
         public static T GetService<T>() where T : IService
         {
-            return Instance._globalServices.GetService<T>();
+            return Instance.gameServices.GetService<T>();
         }
         public static bool HasService(Type t)
         {
-            if (Instance._gameMode != null && Instance._gameMode._gameServices.HasService(t))
-            {
-                return true;
-            }
-            return Instance._globalServices.HasService(t);
+            return Instance.gameServices.HasService(t);
+        }
+        internal static IWindow GetWindow()
+        {
+            return Instance.window;
+        }
+        internal static GL GetOpenGL()
+        {
+            return Instance.gl;
+        }
+        internal static AL GetOpenAL()
+        {
+            return Instance.al;
+        }
+        internal static ALContext GetALContext()
+        {
+            return Instance.alContext;
+        }
+        internal static IInputContext GetInputContext()
+        {
+            return Instance.inputContext;
+        }
+        internal static WindowOptions GetWindowOptions()
+        {
+            return Instance.windowOptions;
+        }
+        internal static Stream LoadResource(string resourceName)
+        {
+            var a = Assembly.GetEntryAssembly();
+            Stream s = a.GetManifestResourceStream(resourceName);
+            return s;
         }
 
+        private Game game;
+        private GameServices gameServices;
+        private Performance performance = new Performance();
+        private IWindow window;
+        private WindowOptions windowOptions;
 
-        private Game _game;
-        private GameServices _globalServices = new GameServices();
-        private Performance _performance = new Performance();
-
-        private GameMode? _gameMode;
+        private IInputContext? inputContext;
+        private AL? al;
+        private ALContext? alContext;
+        private GL? gl;
+        private GameMode? gameMode;
+        private ImGuiController? imguiController;
         internal Engine(Game game, WindowOptions windowOptions, params string[] args)
         {
             Instance = this;
-            _game = game;
+            this.game = game;
+            gameServices = new GameServices(game);
+            this.windowOptions = windowOptions;
+            window = Window.Create(windowOptions);
 
-            RegisterService(new RenderService(out IWindow _window, windowOptions));
-            RegisterService(new InputService());
+            window.Load += Init;
+            window.Update += Tick;
+            window.Render += Render;
+            window.Closing += Close;
 
-            _globalServices.OnAddServices(_game);
-
-            _window.Load += Init;
-            _window.Update += Tick;
-            _window.Render += Render;
-            _window.Run();
+            window.Run();
         }
         private void Init()
         {
-            _game.StartGame();
+            al = AL.GetApi();
+            alContext = ALContext.GetApi();
+            gl = window.CreateOpenGL();
+            inputContext = window.CreateInput();
+            imguiController = new ImGuiController(gl, window, inputContext);
+            game.RegisterServices(gameServices);
+            game.StartGame();
+            gameServices.Init();
+
         }
-       
         private void Tick(double deltaTime)
         {
-            _performance.StartCpu();
-            _gameMode?.Tick(deltaTime);
-            _performance.StopCpu();
+            performance.StartCpu();
+            gameMode?.Tick(deltaTime);
+            performance.StopCpu();
         }
-
         private void Render(double deltaTime)
         {
-            _performance.StartGpu();
-            _gameMode?.Render(deltaTime);
-            _performance.StopGpu();
+            performance.StartGpu();
+            imguiController?.Update((float)deltaTime);
+            gameMode?.Render(deltaTime);
+            imguiController?.Render();
+            performance.StopGpu();
+        }
+        private void Close()
+        {
+            al.Dispose();
+            alContext.Dispose();
+            imguiController?.Dispose();
+            inputContext?.Dispose();
+            gl?.Dispose();
         }
         private void SetGameMode_Internal<T>() where T : GameMode, new()
         {
-            if(_gameMode != null)
+            if(gameMode != null)
             {
-                _gameMode.CleanUp();
+                gameMode.CleanUp();
             }
-            _gameMode = new T();
-            _gameMode.StartMode_Internal();
+            gameMode = new T();
+            gameMode.StartMode_Internal();
         }
     }
 }

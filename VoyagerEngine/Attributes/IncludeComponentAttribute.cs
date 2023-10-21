@@ -1,14 +1,13 @@
-﻿using VoyagerEngine.Core;
-
+﻿using VoyagerEngine.Framework;
 namespace VoyagerEngine.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class IncludeComponentAttribute<T> : Attribute where T : IComponent
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class IncludeComponentAttribute : Attribute
     {
-        public T Component { get; private set; }
-        public IncludeComponentAttribute(T component)
+        public HashSet<Type> Components { get; private set; }
+        public IncludeComponentAttribute(params Type[] services)
         {
-            Component = component;
-    }
+            Components = services.ToHashSet();
+        }
     }
 }

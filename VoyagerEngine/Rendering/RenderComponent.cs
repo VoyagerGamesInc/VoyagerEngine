@@ -1,18 +1,18 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using VoyagerEngine.Core;
+using VoyagerEngine.Framework;
 using VoyagerEngine.Utilities;
 using VoyagerEngine.Attributes;
-using static VoyagerEngine.Rendering.RenderService;
 
 namespace VoyagerEngine.Rendering
 {
-    [IncludeFlags(typeof(InitializeRendererFlag))]
+    [IncludeComponent(typeof(InitializeRendererComponent))]
     public class RenderComponent : IComponent
     {
+        public string ShaderName = Shader.DefaultSpriteShaderName;
         internal uint Program;
-        internal uint VAO { get; private set; }
-        internal uint VBO { get; private set; }
+        internal uint VAO;
+        internal uint VBO;
 
         private Vector2 _position;
         public Vector2 Position
@@ -24,7 +24,7 @@ namespace VoyagerEngine.Rendering
             set
             {
                 _position = value;
-                UpdateFlags |= UpdateFlags.Position;
+                UpdateFlag |= UpdateFlags.Position;
             }
         }
         internal Vector4 NormalizedColor { get; private set; }
@@ -33,7 +33,7 @@ namespace VoyagerEngine.Rendering
             set
             {
                 NormalizedColor = value.NormalizeToVector4();
-                UpdateFlags |= UpdateFlags.Color;
+                UpdateFlag |= UpdateFlags.Texture;
             }
         }
         public Vector2 Size
@@ -44,34 +44,26 @@ namespace VoyagerEngine.Rendering
             }
             set
             {
-                Verts[2] = value.X;
-                Verts[4] = value.X;
-                Verts[5] = value.Y;
-                Verts[7] = value.Y;
-                UpdateFlags |= UpdateFlags.Verts;
-            }
-        }
-
-        public Vector2 Pivot
-        {
-            set
-            {
-                Verts[2] = value.X;
-                Verts[4] = value.X;
-                Verts[5] = value.Y;
-                Verts[7] = value.Y;
-                UpdateFlags |= UpdateFlags.Verts;
+                //Verts[2] = value.X;
+                //Verts[4] = value.X;
+                //Verts[5] = value.Y;
+                //Verts[7] = value.Y;
+                UpdateFlag |= UpdateFlags.Verts;
             }
         }
 
         internal float[] Verts { get; private set; } =
         {
-            0f, 0f, // bottom left
-            1f, 0f, // bottom right
-            1f, 1f, // top right
-            0f, 1f, // top left
+            0.0f, 0.0f, // bottom left
+            1.0f, 0.0f, // bottom right
+            1.0f, 1.0f, // top right
+            0.0f, 1.0f, // top left
+            1.0f, 0.5f, 0.5f, 1.0f, // bottom left color
+            1.0f, 0.5f, 0.5f, 1.0f, // bottom right color
+            1.0f, 0.5f, 0.5f, 1.0f, // top right color
+            1.0f, 0.5f, 0.5f, 1.0f // top left color
         };
 
-        internal UpdateFlags UpdateFlags = UpdateFlags.None;
+        internal UpdateFlags UpdateFlag = UpdateFlags.None;
     }
 }

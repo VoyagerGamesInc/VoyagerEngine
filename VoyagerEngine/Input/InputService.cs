@@ -1,46 +1,40 @@
 using Silk.NET.Input;
+using Silk.NET.Windowing;
 using VoyagerEngine.Attributes;
-using VoyagerEngine.Core;
+using VoyagerEngine.Framework;
 using VoyagerEngine.Rendering;
 using VoyagerEngine.Utilities;
 
 namespace VoyagerEngine.Input
 {
-    [ServiceDependency(typeof(RenderService))]
+    [RequiresService(typeof(RenderService))]
     public class InputService : IService
     {
-        private IInputContext _inputContext;
-        private List<IInput_Device> _idleDevices = new();
-        private Dictionary<IInputDevice, IInput_Device> _deviceMap = new();
-        private List<IInput_Listener> _requestingListeners = new();
-
-        private Dictionary<string, IInput_Listener> disconnectedDevices = new();
-        public void Init()
+        private IInputContext inputContext;
+        private Dictionary<IInputDevice, IInputController> deviceMap = new();
+        private List<IInputListener> requests = new();
+        public InputService()
         {
-            RenderService windowService = Engine.GetService<RenderService>();
-            _inputContext = windowService.Window.CreateInput();
-            CollectDevices();
-            _inputContext.ConnectionChanged += OnDeviceChange;
-            windowService.Window.Update += Tick;
+            Engine.GetInputContext().ConnectionChanged += OnDeviceChange;
         }
         internal void Tick(double deltaTime)
         {
-            if (_idleDevices.Count == 0)
+            if (deviceMap.Count == 0)
             {
                 CollectDevices();
             }
-            foreach (var device in _idleDevices)
+            foreach (var device in deviceMap)
             {
-                if (!device.Disconnected)
+                if (!device.Key.IsConnected)
                 {
-                    device.Update();
+                    device.Value.Update();
 
-                    if (_requestingListeners.Count > 0)
+                    if (requests.Count > 0)
                     {
-                        TrySettingDevice(device);
+                        TrySettingDevice(device.Value);
                     }
 
-                    device.ProcessFrame();
+                    device.Value.ProcessFrame();
                 }
             }
         }
@@ -48,115 +42,57 @@ namespace VoyagerEngine.Input
         private void CollectDevices()
         {
             List<IInputDevice> devices = new List<IInputDevice>();
-            devices.AddRange(_inputContext.Keyboards);
-            devices.AddRange(_inputContext.Mice);
-            devices.AddRange(_inputContext.Gamepads);
-            devices.AddRange(_inputContext.Joysticks);
+            devices.AddRange(inputContext.Keyboards);
+            devices.AddRange(inputContext.Mice);
+            devices.AddRange(inputContext.Gamepads);
+            devices.AddRange(inputContext.Joysticks);
             foreach (IInputDevice device in devices)
             {
-                IInput_Device voyagerDevice = CreateVoyagerInput_Device(device);
-                _idleDevices.Add(voyagerDevice);
+                if(!deviceMap.ContainsKey(device))
+                    deviceMap.Add(device,CreateVoyagerInput_Device(device));
             }
         }
 
-
-        private void OnDeviceChange(IInputDevice device, bool change)
+        private void OnDeviceChange(IInputDevice device, bool added)
         {
-            if (change)
+            if (added)
             {
             }
-            else
+            else // removed
             {
-
             }
-
-            /* # REMOVED
-            if (TryGetVoyagerInputDevice(device, out IVoyagerInput_Device voyagerDevice))
-            {
-                VoyagerInput_Listener listener = voyagerDevice.Listener;
-                disconnectedDevices.Add(device.Name, listener);
-                Debug.WriteLine($"{LogMagenta(listener.Name)} will try reconnecting to assigned [{LogYellow(device.Name)}]");
-                RequestController(listener);
-                voyagerDevice.WasRemoved();
-                _devices.Remove(voyagerDevice);
-            }
-            */
-            /* # ADDED
-            IVoyagerInput_Device newDevice = CreateVoyagerInput_Device(device);
-            _devices.Add(newDevice);
-            if (disconnectedDevices.TryGetValue(device.Name, out VoyagerInput_Listener listener))
-            {
-                Debug.WriteLine($"{LogYellow(device.Name)} was reassigned to [{LogMagenta(listener.Name)}]");
-                newDevice.SetListener(listener);
-                _requestingListeners.Remove(listener);
-                disconnectedDevices.Remove(device.Name);
-            }
-            */
+            
         }
-        private bool TryGetVoyagerInputDevice(IInputDevice device, out IInput_Device voyagerDevice)
-        {
-            foreach (IInput_Device storedDevice in _idleDevices)
-            {
-                if (storedDevice.InputDevice == device)
-                {
-                    voyagerDevice = storedDevice;
-                    return true;
-                }
-            }
-            voyagerDevice = null;
-            return false;
-        }
-        private void TrySettingDevice(IInput_Device device)
+        private void TrySettingDevice(IInputController device)
         {
             if (device.Listener == null && device.WasUpdatedThisFrame)
             {
-                IInput_Listener listener = _requestingListeners[0];
+                IInputListener listener = requests[0];
                 device.SetListener(listener);
-                _requestingListeners.Remove(listener);
-
-                foreach (var kv in disconnectedDevices)
-                {
-                    if (kv.Value == listener)
-                    {
-                        disconnectedDevices.Remove(kv.Key);
-                        break;
-                    }
-                }
+                requests.Remove(listener);
             }
-
         }
-        internal void SetReceiverFor<T>(IInput_Listener listener) where T : IInput_Device
+        public void RequestController(IInputListener listener)
         {
-            foreach (IInput_Device storedDevice in _idleDevices)
+            if (!requests.Contains(listener))
             {
-                if (storedDevice.Listener == null && storedDevice is T)
-                {
-                    storedDevice.SetListener(listener);
-                    return;
-                }
+                requests.Add(listener);
             }
         }
-        public void Request(IInput_Listener listener)
+        internal void CancelRequest(IInputListener listener)
         {
-            if (!_requestingListeners.Contains(listener))
-            {
-                _requestingListeners.Add(listener);
-            }
+            requests.Remove(listener);
         }
-        internal void CancelRequest(IInput_Listener listener)
-        {
-            _requestingListeners.Remove(listener);
-        }
-        private IInput_Device CreateVoyagerInput_Device(IInputDevice device)
+        private IInputController CreateVoyagerInput_Device(IInputDevice device)
         {
             switch (device)
             {
                 case IMouse mouse:
-                    return new Input_Mouse(mouse);
+                    return new Mouse(mouse);
                 case IKeyboard keyboard:
-                    return new Input_Keyboard(keyboard);
+                    return new Keyboard(keyboard);
                 case IGamepad gamepad:
-                    return new Input_Gamepad(gamepad);
+                    return new Gamepad(gamepad);
             }
             throw new NotSupportedException("Unsupported device detected.");
         }

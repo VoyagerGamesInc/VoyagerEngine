@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace VoyagerEngine.Core
+﻿namespace VoyagerEngine.Framework
 {
     public abstract class Game : IGameServicesHandler
     {
         /// <summary>
         /// Register Services Here
         /// </summary>
-        public virtual void OnServicesInit(GameServices gameServices)
+        public virtual void RegisterServices(in GameServices gameServices)
         {
         }
         /// <summary>

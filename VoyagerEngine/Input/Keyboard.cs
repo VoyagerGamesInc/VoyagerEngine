@@ -1,10 +1,10 @@
 using Silk.NET.Input;
 namespace VoyagerEngine.Input
 {
-    internal class Input_Keyboard : Input_Device<IKeyboard>
+    internal class Keyboard : Input_Device<IKeyboard>
     {
         private HashSet<Key> heldKeys = new();
-        internal Input_Keyboard(IKeyboard device) : base(device)
+        internal Keyboard(IKeyboard device) : base(device)
         {
             Device.KeyDown -= Device_KeyDown;
             Device.KeyDown += Device_KeyDown;

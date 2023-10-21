@@ -1,76 +1,156 @@
-﻿using Silk.NET.OpenGLES;
-using Silk.NET.Windowing;
+﻿using Silk.NET.OpenGL;
 using System.Drawing;
-using VoyagerEngine.Core;
+using System.Numerics;
+using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Rendering
 {
-    internal class RenderService : IService
+    [Flags]
+    public enum UpdateFlags
     {
-        [Flags]
-        public enum UpdateFlags
-        {
-            None = 0,
-            Color = 1,
-            Position = 2,
-            Verts = 4,
-            Viewport = 8
-        }
-        internal IWindow Window { get; private set; }
-        internal WindowOptions WindowOptions { get; private set; }
-        public GL GL { get; private set; }
+        None = 0,
+        Texture = 1,
+        Position = 2,
+        Verts = 4,
+        Camera = 8,
+        Viewport = 16
+    }
+    public class RenderService : IService
+    {
+        private GL gl;
+        private Dictionary<string, Shader> shaderMap = new();
+        private HashSet<uint> programs = new();
 
-        private Dictionary<string, Shader> _shaderMap = new();
-        public RenderService(out IWindow window, WindowOptions windowOptions)
+        public RenderService()
         {
-            window = Window = Silk.NET.Windowing.Window.Create(windowOptions);
-            WindowOptions = windowOptions;
+            gl = Engine.GetOpenGL();
         }
-        public void Init()
-        {
-            GL = Window.CreateOpenGLES();
-        }
-
         internal void SetClearColor(Color color)
         {
-            GL.ClearColor(color);
+            gl.ClearColor(color);
         }
         internal void Clear()
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            gl.Clear(ClearBufferMask.ColorBufferBit);
         }
-        internal void RegisterShader(ref Shader shader)
+        internal void RegisterShader(Shader shader)
         {
-            uint vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vertexShader, shader.GetVert());
-            GL.CompileShader(vertexShader);
-            GL.GetShader(vertexShader, ShaderParameterName.CompileStatus, out int vertRes);
+            uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
+            gl.ShaderSource(vertexShader, shader.GetVert());
+            gl.CompileShader(vertexShader);
+            gl.GetShader(vertexShader, ShaderParameterName.CompileStatus, out int vertRes);
             if (vertRes != (int)GLEnum.True)
-                throw new Exception("Vertex shader failed to compile: " + GL.GetShaderInfoLog(vertexShader));
+                throw new Exception("Vertex shader failed to compile: " + gl.GetShaderInfoLog(vertexShader));
 
-            uint fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, shader.GetFrag());
-            GL.CompileShader(fragmentShader);
-            GL.GetShader(fragmentShader, ShaderParameterName.CompileStatus, out int fragRes);
+            uint fragmentShader = gl.CreateShader(ShaderType.FragmentShader);
+            gl.ShaderSource(fragmentShader, shader.GetFrag());
+            gl.CompileShader(fragmentShader);
+            gl.GetShader(fragmentShader, ShaderParameterName.CompileStatus, out int fragRes);
             if (fragRes != (int)GLEnum.True)
-                throw new Exception("Fragment shader failed to compile: " + GL.GetShaderInfoLog(fragmentShader));
+                throw new Exception("Fragment shader failed to compile: " + gl.GetShaderInfoLog(fragmentShader));
 
-            uint program = GL.CreateProgram();
-            GL.AttachShader(program, vertexShader);
-            GL.AttachShader(program, fragmentShader);
-            GL.LinkProgram(program);
-            GL.GetProgram(program, ProgramPropertyARB.LinkStatus, out int progRes);
+            uint program = gl.CreateProgram();
+
+            programs.Add(program);
+
+            gl.AttachShader(program, vertexShader);
+            gl.AttachShader(program, fragmentShader);
+            gl.LinkProgram(program);
+            gl.GetProgram(program, ProgramPropertyARB.LinkStatus, out int progRes);
             if (progRes != (int)GLEnum.True)
-                throw new Exception("Program failed to link: " + GL.GetProgramInfoLog(program));
+                throw new Exception("Program failed to link: " + gl.GetProgramInfoLog(program));
 
             shader.SetProgram(program);
 
-            _shaderMap.Add(shader.Name, shader);
+            shaderMap.Add(shader.Name, shader);
 
-            GL.DetachShader(program, vertexShader);
-            GL.DetachShader(program, fragmentShader);
-            GL.DeleteShader(vertexShader);
-            GL.DeleteShader(fragmentShader);
+            gl.DetachShader(program, vertexShader);
+            gl.DetachShader(program, fragmentShader);
+            gl.DeleteShader(vertexShader);
+            gl.DeleteShader(fragmentShader);
+        }
+        public void GetProgram(string shaderName, out uint program)
+        {
+            program = 0;
+            if(shaderMap.TryGetValue(shaderName, out var shader))
+            {
+                program = shader.Program;
+            }
+        }
+      
+        public void DrawQuad(uint program, uint vao)
+        {
+            gl.BindVertexArray(vao);
+            gl.UseProgram(program);
+            gl.DrawArrays(GLEnum.TriangleFan, 0, 4);
+        }
+        public unsafe void GenerateVertexBuffer(float[] data, out uint vao, out uint vbo)
+        {
+            vao = gl.GenVertexArray();
+            gl.BindVertexArray(vao);
+
+            vbo = gl.GenBuffer();
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+            gl.BufferData(BufferTargetARB.ArrayBuffer, new ReadOnlySpan<float>(data), BufferUsageARB.StaticDraw);
+
+            const uint vertLoc = 0;
+            gl.EnableVertexAttribArray(vertLoc);
+            gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), (void*)0);
+
+            const uint colorLoc = 1;
+            gl.EnableVertexAttribArray(colorLoc);
+            gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), (void*)(8 * sizeof(float)));
+
+            gl.BindVertexArray(0);
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        }
+        public void UpdateVertexBuffer(float[] vertex, uint vbo)
+        {
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+            gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, new ReadOnlySpan<float>(vertex));
+        }
+        public void SetUniform(string name, uint program, Vector2 data)
+        {
+            int loc = gl.GetUniformLocation(program, name);
+            if (loc != -1)
+                gl.Uniform2(loc, ref data);
+        }
+        public void SetUniforms(string name, Vector2 data)
+        {
+            foreach(uint program in programs)
+            {
+                SetUniform(name, program, data);
+            }
+        }
+        public void SeVertexAttrib(string name, uint program, Vector2 data)
+        {
+            int loc = gl.GetAttribLocation(program, name);
+            if (loc != -1)
+                gl.VertexAttrib2((uint)loc, ref data);
+        }
+        public void SetVertexAttrib(string name, uint program, Vector4 data)
+        {
+            int loc = gl.GetAttribLocation(program, name);
+            if (loc != -1)
+                gl.VertexAttrib4((uint)loc, ref data);
+        }
+        public void GenerateTexture(string path)
+        {
+            //using (var fs = File.OpenRead(path))
+            //{
+            //    ImageResult imageResult = ImageResult.FromStream(fs, ColorComponents.RedGreenBlueAlpha);
+
+            //    if (imageResult == null || imageResult.Data == null)
+            //    {
+            //        throw new InvalidOperationException("Failed to load image.");
+            //    }
+
+            //    uint textureId = gl.GenTexture();
+            //    gl.BindTexture(GLEnum.Texture2D, textureId);
+            //    gl.TexImage2D<byte>(
+            //        GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)imageResult.Width, (uint)imageResult.Height, 0,
+            //        GLEnum.Rgba, GLEnum.UnsignedByte, new ReadOnlySpan<byte>(imageResult.Data));
+            //}
         }
     }
 }

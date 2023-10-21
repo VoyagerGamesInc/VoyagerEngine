@@ -1,10 +1,10 @@
-﻿namespace VoyagerEngine.Core
+﻿namespace VoyagerEngine.Framework
 {
     internal interface IGameSystemsHandler
     {
         /// <summary>
         /// Register systems here
         /// </summary>
-        void OnSystemsInit(GameSystems gameSystems);
+        void RegisterSystems(in GameSystems gameSystems);
     }
 }

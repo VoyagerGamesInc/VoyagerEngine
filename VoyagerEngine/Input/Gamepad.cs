@@ -1,9 +1,9 @@
 using Silk.NET.Input;
 namespace VoyagerEngine.Input
 {
-    internal class Input_Gamepad : Input_Device<IGamepad>
+    internal class Gamepad : Input_Device<IGamepad>
     {
-        internal Input_Gamepad(IGamepad device) : base(device)
+        internal Gamepad(IGamepad device) : base(device)
         {
             Device.ButtonDown += Device_ButtonDown;
             Device.ButtonUp += Device_ButtonUp;

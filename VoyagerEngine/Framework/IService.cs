@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VoyagerEngine.Core
+namespace VoyagerEngine.Framework
 {
-    public interface ISystem
+    public interface IService
     {
-        void Init();
     }
 }

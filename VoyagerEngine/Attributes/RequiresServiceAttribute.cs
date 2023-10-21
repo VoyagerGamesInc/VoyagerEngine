@@ -1,12 +1,12 @@
-﻿using VoyagerEngine.Core;
+﻿using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class ServiceDependencyAttribute : Attribute
+    public class RequiresServiceAttribute : Attribute
     {
         public HashSet<Type> Services { get; private set; }
-        public ServiceDependencyAttribute(params Type[] services)
+        public RequiresServiceAttribute(params Type[] services)
         {
             Services = services.ToHashSet();
         }

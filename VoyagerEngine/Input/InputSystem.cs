@@ -1,12 +1,12 @@
 ﻿using VoyagerEngine.Attributes;
-using VoyagerEngine.Core;
+using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Input
 {
-    [ServiceDependency(typeof(InputService))]
+    [RequiresService(typeof(InputService))]
     internal class InputSystem : ITickingSystem
     {
-        public void Init()
+        public InputSystem()
         {
         }
 

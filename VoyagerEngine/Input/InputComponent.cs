@@ -1,4 +1,4 @@
-﻿using VoyagerEngine.Core;
+﻿using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Input
 {

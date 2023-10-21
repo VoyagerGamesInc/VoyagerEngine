@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VoyagerEngine.Core
+namespace VoyagerEngine.Framework
 {
     internal interface IGameServicesHandler
     {
-        void OnServicesInit(GameServices gameServices);
+        void RegisterServices(in GameServices gameServices);
     }
 }

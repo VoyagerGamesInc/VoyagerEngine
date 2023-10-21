@@ -33,8 +33,8 @@ namespace VoyagerEngine.Rendering
             return new Shader
             {
                 Name = DefaultSpriteShaderName,
-                VertPath = "VoyagerEngine.Rendering.ShaderFiles.vert.glsl",
-                FragPath = "VoyagerEngine.Rendering.ShaderFiles.frag.glsl"
+                VertPath = "VoyagerEngine.Rendering.GLSL.vert.glsl",
+                FragPath = "VoyagerEngine.Rendering.GLSL.frag.glsl"
             };
         }
     }
