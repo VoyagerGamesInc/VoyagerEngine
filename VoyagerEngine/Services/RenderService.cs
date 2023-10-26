@@ -1,9 +1,9 @@
 ﻿using Silk.NET.OpenGL;
 using System.Drawing;
 using System.Numerics;
-using VoyagerEngine.Framework;
+using Shader = VoyagerEngine.Rendering.Shader;
 
-namespace VoyagerEngine.Rendering
+namespace VoyagerEngine.Services
 {
     [Flags]
     public enum UpdateFlags
@@ -72,12 +72,12 @@ namespace VoyagerEngine.Rendering
         public void GetProgram(string shaderName, out uint program)
         {
             program = 0;
-            if(shaderMap.TryGetValue(shaderName, out var shader))
+            if (shaderMap.TryGetValue(shaderName, out var shader))
             {
                 program = shader.Program;
             }
         }
-      
+
         public void DrawQuad(uint program, uint vao)
         {
             gl.BindVertexArray(vao);
@@ -115,13 +115,6 @@ namespace VoyagerEngine.Rendering
             if (loc != -1)
                 gl.Uniform2(loc, ref data);
         }
-        public void SetUniforms(string name, Vector2 data)
-        {
-            foreach(uint program in programs)
-            {
-                SetUniform(name, program, data);
-            }
-        }
         public void SeVertexAttrib(string name, uint program, Vector2 data)
         {
             int loc = gl.GetAttribLocation(program, name);
@@ -134,23 +127,13 @@ namespace VoyagerEngine.Rendering
             if (loc != -1)
                 gl.VertexAttrib4((uint)loc, ref data);
         }
-        public void GenerateTexture(string path)
+        public void GenerateTexture(string resourcePath)
         {
-            //using (var fs = File.OpenRead(path))
-            //{
-            //    ImageResult imageResult = ImageResult.FromStream(fs, ColorComponents.RedGreenBlueAlpha);
-
-            //    if (imageResult == null || imageResult.Data == null)
-            //    {
-            //        throw new InvalidOperationException("Failed to load image.");
-            //    }
-
-            //    uint textureId = gl.GenTexture();
-            //    gl.BindTexture(GLEnum.Texture2D, textureId);
-            //    gl.TexImage2D<byte>(
-            //        GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)imageResult.Width, (uint)imageResult.Height, 0,
-            //        GLEnum.Rgba, GLEnum.UnsignedByte, new ReadOnlySpan<byte>(imageResult.Data));
-            //}
+            Image image = Image.FromStream(Engine.LoadResource(resourcePath));
+            //gl.BindTexture(GLEnum.Texture2D, textureId);
+            //gl.TexImage2D<byte>(
+            //    GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)imageResult.Width, (uint)imageResult.Height, 0,
+            //    GLEnum.Rgba, GLEnum.UnsignedByte, new ReadOnlySpan<byte>(imageResult.Data));
         }
     }
 }

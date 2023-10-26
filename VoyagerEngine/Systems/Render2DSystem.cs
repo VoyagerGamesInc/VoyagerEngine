@@ -1,15 +1,19 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using VoyagerEngine.Attributes;
+using VoyagerEngine.Components;
 using VoyagerEngine.Framework;
+using VoyagerEngine.Rendering;
+using VoyagerEngine.Services;
 
-namespace VoyagerEngine.Rendering
+namespace VoyagerEngine.Systems
 {
     [RequiresService(typeof(RenderService))]
-    public class RenderingSystem : IRenderSystem
+    public class Render2DSystem : IRenderSystem
     {
+        private delegate void OnUniformUpdate(IUniformUpdateArgs args);
         private RenderService renderService;
-        public RenderingSystem()
+        public Render2DSystem()
         {
             renderService = Engine.GetService<RenderService>();
             renderService.SetClearColor(Color.CornflowerBlue);
@@ -17,9 +21,9 @@ namespace VoyagerEngine.Rendering
             renderService.RegisterShader(Shader.DefaultSpriteShader());
 
             Entity viewportEntity = EntityRegistry.CreateEntity();
-            ViewportComponent viewportComponent = viewportEntity.AddComponent<ViewportComponent>();
-            viewportComponent.UpdateFlag |= UpdateFlags.Viewport;
-            //UpdateViewport(viewportEntity, viewportComponent);
+            Viewport2DComponent viewportComponent = viewportEntity.AddComponent<Viewport2DComponent>();
+            viewportComponent.Size = FromVector2D(Engine.GetWindow().Size);
+            UpdateViewport(viewportEntity, viewportComponent);
 
             Entity cameraEntity = EntityRegistry.CreateEntity();
             CameraComponent cameraComponent = cameraEntity.AddComponent<CameraComponent>();
@@ -28,30 +32,36 @@ namespace VoyagerEngine.Rendering
         public void Render(in EntityRegistry registry)
         {
             renderService.Clear();
-            //registry.View<ViewportComponent>(UpdateViewport);
+            registry.View<Viewport2DComponent>(UpdateViewport);
             registry.View<CameraComponent>(UpdateCamera);
-            registry.View<RenderComponent,InitializeRendererComponent>(InitializeRenderer);
-            registry.View<RenderComponent>(Render);
+            registry.View<Render2DComponent, InitializeRendererComponent>(InitializeRenderer);
+            registry.View<Render2DComponent, Position2DComponent>(UpdatePosition);
+            registry.View<Render2DComponent>(Render);
         }
-        private void InitializeRenderer(Entity entity, RenderComponent renderComponent, InitializeRendererComponent initializeFlag)
+        private void InitializeRenderer(Entity entity, Render2DComponent renderComponent, InitializeRendererComponent initializeFlag)
         {
             renderService.GenerateVertexBuffer(renderComponent.Verts, out renderComponent.VAO, out renderComponent.VBO);
             renderService.GetProgram(renderComponent.ShaderName, out renderComponent.Program);
             //UpdateComponentVariables(renderComponent, renderService);
             entity.RemoveComponent<InitializeRendererComponent>();
         }
-        public void Render(Entity entity, RenderComponent renderComponent)
+        public void UpdatePosition(Entity entity, Render2DComponent renderComponent, Position2DComponent position2DComponent)
         {
-            //UpdateComponentVariables(renderComponent, renderService);
+            if (position2DComponent.UpdateFlag.HasFlag(UpdateFlags.Position))
+            {
+                renderService.SeVertexAttrib("position", renderComponent.Program, position2DComponent.Position);
+            }
+        }
+        public void Render(Entity entity, Render2DComponent renderComponent)
+        {
+            UpdateComponentVariables(renderComponent, renderService);
             renderService.DrawQuad(renderComponent.Program, renderComponent.VAO);
         }
 
-        private void UpdateViewport(Entity entity, ViewportComponent viewportComponent)
+        private void UpdateViewport(Entity entity, Viewport2DComponent viewportComponent)
         {
             if (viewportComponent.UpdateFlag.HasFlag(UpdateFlags.Viewport))
             {
-                viewportComponent.Size = FromVector2D(Engine.GetWindow().Size);
-                renderService.SetUniforms("viewport", viewportComponent.Size);
             }
             viewportComponent.UpdateFlag = UpdateFlags.None;
         }
@@ -62,15 +72,11 @@ namespace VoyagerEngine.Rendering
             }
             cameraComponent.UpdateFlag = UpdateFlags.None;
         }
-        private static void UpdateComponentVariables(RenderComponent renderComponent, RenderService renderService)
+        private static void UpdateComponentVariables(Render2DComponent renderComponent, RenderService renderService)
         {
             if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Verts))
             {
                 renderService.UpdateVertexBuffer(renderComponent.Verts, renderComponent.VBO);
-            }
-            if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Position))
-            {
-                renderService.SeVertexAttrib("position", renderComponent.Program, renderComponent.Position);
             }
             if (renderComponent.UpdateFlag.HasFlag(UpdateFlags.Texture))
             {
@@ -78,6 +84,7 @@ namespace VoyagerEngine.Rendering
             }
             renderComponent.UpdateFlag = UpdateFlags.None;
         }
+
         private static Vector2 FromVector2D(Silk.NET.Maths.Vector2D<int> from)
         {
             return new Vector2(from.X, from.Y);

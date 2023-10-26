@@ -1,7 +1,7 @@
 ﻿using VoyagerEngine.Attributes;
 using VoyagerEngine.Framework;
 
-namespace VoyagerEngine.Audio
+namespace VoyagerEngine.Components
 {
     [IncludeComponent(typeof(InitializeAudioSourceComponent))]
     public class AudioSourceComponent : IComponent

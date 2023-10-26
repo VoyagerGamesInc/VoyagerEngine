@@ -1,9 +1,11 @@
 ﻿using Silk.NET.OpenAL;
 using System.Numerics;
+using VoyagerEngine.Components;
 using VoyagerEngine.Framework;
 using VoyagerEngine.Rendering;
+using VoyagerEngine.Services;
 
-namespace VoyagerEngine.Audio
+namespace VoyagerEngine.Systems
 {
     public class AudioSystem : ITickingSystem
     {
@@ -12,9 +14,9 @@ namespace VoyagerEngine.Audio
         {
             audioService = Engine.GetService<AudioService>();
 
-            Entity musicPlayerEntity = EntityRegistry.CreateEntity();
-            AudioSourceComponent cmp =musicPlayerEntity.AddComponent<AudioSourceComponent>();
-            cmp.Buffer = audioService.GenerateBuffer();
+            //Entity musicPlayerEntity = EntityRegistry.CreateEntity();
+            //AudioSourceComponent cmp = musicPlayerEntity.AddComponent<AudioSourceComponent>();
+            //cmp.Buffer = audioService.GenerateBuffer();
         }
 
         public void Tick(in EntityRegistry registry)

@@ -1,7 +1,6 @@
-﻿using VoyagerEngine.Framework;
-using Silk.NET.OpenGL.Extensions.ImGui;
+﻿using Silk.NET.OpenGL.Extensions.ImGui;
 
-namespace VoyagerEngine.IMGUI
+namespace VoyagerEngine.Services
 {
     internal class IMGUIService : IService
     {

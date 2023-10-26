@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Framework\Systems\**" />
+    <EmbeddedResource Remove="Framework\Systems\**" />
+    <None Remove="Framework\Systems\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Rendering\GLSL\frag.glsl" />
     <None Remove="Rendering\GLSL\vert.glsl" />
   </ItemGroup>

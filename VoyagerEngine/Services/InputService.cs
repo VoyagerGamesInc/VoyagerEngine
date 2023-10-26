@@ -1,11 +1,10 @@
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using VoyagerEngine.Attributes;
-using VoyagerEngine.Framework;
-using VoyagerEngine.Rendering;
+using VoyagerEngine.Input;
 using VoyagerEngine.Utilities;
 
-namespace VoyagerEngine.Input
+namespace VoyagerEngine.Services
 {
     [RequiresService(typeof(RenderService))]
     public class InputService : IService
@@ -48,8 +47,8 @@ namespace VoyagerEngine.Input
             devices.AddRange(inputContext.Joysticks);
             foreach (IInputDevice device in devices)
             {
-                if(!deviceMap.ContainsKey(device))
-                    deviceMap.Add(device,CreateVoyagerInput_Device(device));
+                if (!deviceMap.ContainsKey(device))
+                    deviceMap.Add(device, CreateVoyagerInput_Device(device));
             }
         }
 
@@ -61,7 +60,7 @@ namespace VoyagerEngine.Input
             else // removed
             {
             }
-            
+
         }
         private void TrySettingDevice(IInputController device)
         {

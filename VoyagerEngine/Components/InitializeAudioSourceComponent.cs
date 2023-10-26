@@ -1,6 +1,6 @@
 ﻿using VoyagerEngine.Framework;
 
-namespace VoyagerEngine.Audio
+namespace VoyagerEngine.Components
 {
     internal class InitializeAudioSourceComponent : IComponent
     {

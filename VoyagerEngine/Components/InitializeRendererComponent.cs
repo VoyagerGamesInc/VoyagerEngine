@@ -1,6 +1,6 @@
 ﻿using VoyagerEngine.Framework;
 
-namespace VoyagerEngine.Rendering
+namespace VoyagerEngine.Components
 {
     internal class InitializeRendererComponent : IComponent
     {

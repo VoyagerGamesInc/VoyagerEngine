@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VoyagerEngine.Framework
+namespace VoyagerEngine.Rendering
 {
-    internal interface IRenderSystem : ISystem
+    internal class UniformUpdate_Vec2 : IUniformUpdateArgs
     {
-        void Render(in EntityRegistry registry);
+        public string Name { get; set; }
     }
 }

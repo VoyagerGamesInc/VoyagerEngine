@@ -1,6 +1,6 @@
 ﻿using VoyagerEngine.Framework;
 
-namespace VoyagerEngine.Input
+namespace VoyagerEngine.Components
 {
     public class RequestDeviceComponent : IComponent
     {

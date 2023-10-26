@@ -1,7 +1,8 @@
 ﻿using System.Numerics;
 using VoyagerEngine.Framework;
+using VoyagerEngine.Services;
 
-namespace VoyagerEngine.Rendering
+namespace VoyagerEngine.Components
 {
     public class CameraComponent : IComponent
     {
@@ -20,7 +21,8 @@ namespace VoyagerEngine.Rendering
             }
         }
         private float scale;
-        public float Scale {
+        public float Scale
+        {
             get
             {
                 return scale;

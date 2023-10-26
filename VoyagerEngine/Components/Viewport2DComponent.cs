@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
 using VoyagerEngine.Framework;
+using VoyagerEngine.Services;
 
-namespace VoyagerEngine.Rendering
+namespace VoyagerEngine.Components
 {
-    public class ViewportComponent : IComponent
+    public class Viewport2DComponent : IComponent
     {
         public UpdateFlags UpdateFlag { get; set; }
         private Vector2 size;
@@ -16,7 +17,7 @@ namespace VoyagerEngine.Rendering
             set
             {
                 size = value;
-                UpdateFlag |= UpdateFlags.Camera;
+                UpdateFlag |= UpdateFlags.Viewport;
             }
         }
     }

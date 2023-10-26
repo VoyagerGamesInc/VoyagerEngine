@@ -5,6 +5,7 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using VoyagerEngine.Framework;
 using System.Reflection;
+using VoyagerEngine.Services;
 
 namespace VoyagerEngine
 {
@@ -59,9 +60,11 @@ namespace VoyagerEngine
         }
         internal static Stream LoadResource(string resourceName)
         {
-            var a = Assembly.GetEntryAssembly();
-            Stream s = a.GetManifestResourceStream(resourceName);
-            return s;
+            return Assembly.GetEntryAssembly().GetManifestResourceStream(resourceName);
+        }
+        internal static IEnumerable<string> FindResources(string resourcePath)
+        {
+            return Assembly.GetEntryAssembly().GetManifestResourceNames().Where(resourceName => resourceName.StartsWith(resourcePath));
         }
 
         private Game game;

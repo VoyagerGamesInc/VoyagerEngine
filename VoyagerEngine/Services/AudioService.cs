@@ -1,10 +1,8 @@
 ﻿using NAudio.Wave;
 using Silk.NET.OpenAL;
 using System.Numerics;
-using System.Reflection;
-using VoyagerEngine.Framework;
 
-namespace VoyagerEngine.Audio
+namespace VoyagerEngine.Services
 {
     public class AudioService : IService
     {
@@ -60,7 +58,7 @@ namespace VoyagerEngine.Audio
                 buffers.Add(buffer);
                 byte[] mp3Data = new byte[mp3Reader.Length];
                 int length = mp3Reader.Read(mp3Data, 0, mp3Data.Length);
-                al.BufferData<byte>(buffer, BufferFormat.Stereo16, mp3Data, mp3Reader.Mp3WaveFormat.SampleRate);
+                al.BufferData(buffer, BufferFormat.Stereo16, mp3Data, mp3Reader.Mp3WaveFormat.SampleRate);
                 al.GetError();
                 return buffer;
             }
@@ -78,11 +76,15 @@ namespace VoyagerEngine.Audio
             al.SetSourceProperty(source, SourceInteger.Buffer, buffer);
             al.SourcePlay(source);
         }
-        internal void Dispose()
+        public void Dispose()
         {
             foreach (uint buffer in buffers)
             {
                 al.DeleteBuffer(buffer);
+            }
+            foreach (uint source in sources)
+            {
+                al.DeleteSource(source);
             }
             audioPointers.Dispose(alContext);
         }

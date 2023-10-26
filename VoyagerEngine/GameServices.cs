@@ -1,6 +1,8 @@
 ﻿using VoyagerEngine.Attributes;
+using VoyagerEngine.Framework;
+using VoyagerEngine.Services;
 
-namespace VoyagerEngine.Framework
+namespace VoyagerEngine
 {
     public class GameServices
     {
@@ -45,7 +47,7 @@ namespace VoyagerEngine.Framework
             if (Attribute.IsDefined(typeof(T), typeof(RequiresServiceAttribute)))
             {
                 RequiresServiceAttribute attribute = (RequiresServiceAttribute)typeof(T).GetCustomAttributes(typeof(RequiresServiceAttribute), false)[0];
-                foreach(var service in attribute.Services)
+                foreach (var service in attribute.Services)
                 {
                     Debug.Assert(Engine.HasService(service), $"Service dependency for {typeof(T).Name} is missing: {service.Name}");
                 }
@@ -53,3 +55,4 @@ namespace VoyagerEngine.Framework
         }
     }
 }
+
