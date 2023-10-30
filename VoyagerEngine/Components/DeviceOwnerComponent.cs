@@ -2,7 +2,7 @@
 
 namespace VoyagerEngine.Components
 {
-    public class InputComponent : IComponent
+    public class DeviceOwnerComponent : IComponent
     {
     }
 }

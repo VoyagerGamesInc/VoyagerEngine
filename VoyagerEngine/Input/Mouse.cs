@@ -4,18 +4,22 @@ using System.Numerics;
 
 namespace VoyagerEngine.Input
 {
-    internal class Mouse : Input_Device<IMouse>
+    internal class Mouse : InputDevice<IMouse>
     {
         internal Mouse(IMouse device) : base(device)
         {
-            Device.DoubleClickRange = 10;
-            Device.DoubleClickTime = 150;
-            Device.MouseDown += Device_MouseDown;
-            Device.MouseUp += Device_MouseUp;
-            Device.MouseMove += Device_MouseMove;
-            Device.DoubleClick += Device_DoubleClick;
-            Device.Click += Device_Click;
-            Device.Scroll += Device_Scroll;
+            device.DoubleClickRange = 10;
+            device.DoubleClickTime = 150;
+            device.MouseDown += Device_MouseDown;
+            device.MouseUp += Device_MouseUp;
+            device.MouseMove += Device_MouseMove;
+            device.DoubleClick += Device_DoubleClick;
+            device.Click += Device_Click;
+            device.Scroll += Device_Scroll;
+        }
+        protected override void Collect()
+        {
+
         }
 
         private void Device_Click(IMouse device, MouseButton mouseButton, Vector2 position)

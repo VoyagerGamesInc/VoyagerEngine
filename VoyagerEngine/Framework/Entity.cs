@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-using VoyagerEngine.Attributes;
+﻿using VoyagerEngine.Attributes;
 
 namespace VoyagerEngine.Framework
 {
     public class Entity
     {
         internal Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
-        public Entity()
-        {
-        }
         public T AddComponent<T>() where T : class, IComponent, new()
         {
             if (!Components.TryGetValue(typeof(T), out IComponent component))
@@ -36,6 +32,10 @@ namespace VoyagerEngine.Framework
         public bool HasComponents(HashSet<Type> components)
         {
             return components.All(key => Components.Keys.Contains(key));
+        }
+        internal bool ExcludesComponents(HashSet<Type> components)
+        {
+            return !components.Overlaps(Components.Keys);
         }
         public T GetComponent<T>() where T : class, IComponent, new()
         {

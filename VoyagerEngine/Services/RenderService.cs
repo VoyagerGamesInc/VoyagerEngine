@@ -77,11 +77,13 @@ namespace VoyagerEngine.Services
                 program = shader.Program;
             }
         }
-
-        public void DrawQuad(uint program, uint vao)
+        public void UseProgram(uint program)
+        {
+            gl.UseProgram(program);
+        }
+        public void DrawQuad(uint vao)
         {
             gl.BindVertexArray(vao);
-            gl.UseProgram(program);
             gl.DrawArrays(GLEnum.TriangleFan, 0, 4);
         }
         public unsafe void GenerateVertexBuffer(float[] data, out uint vao, out uint vbo)

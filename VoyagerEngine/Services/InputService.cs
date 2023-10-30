@@ -1,8 +1,6 @@
 using Silk.NET.Input;
-using Silk.NET.Windowing;
 using VoyagerEngine.Attributes;
 using VoyagerEngine.Input;
-using VoyagerEngine.Utilities;
 
 namespace VoyagerEngine.Services
 {
@@ -11,33 +9,12 @@ namespace VoyagerEngine.Services
     {
         private IInputContext inputContext;
         private Dictionary<IInputDevice, IInputController> deviceMap = new();
-        private List<IInputListener> requests = new();
         public InputService()
         {
+            inputContext = Engine.GetInputContext();
             Engine.GetInputContext().ConnectionChanged += OnDeviceChange;
+            CollectDevices();
         }
-        internal void Tick(double deltaTime)
-        {
-            if (deviceMap.Count == 0)
-            {
-                CollectDevices();
-            }
-            foreach (var device in deviceMap)
-            {
-                if (!device.Key.IsConnected)
-                {
-                    device.Value.Update();
-
-                    if (requests.Count > 0)
-                    {
-                        TrySettingDevice(device.Value);
-                    }
-
-                    device.Value.ProcessFrame();
-                }
-            }
-        }
-
         private void CollectDevices()
         {
             List<IInputDevice> devices = new List<IInputDevice>();
@@ -56,31 +33,40 @@ namespace VoyagerEngine.Services
         {
             if (added)
             {
+                if (!deviceMap.ContainsKey(device))
+                    deviceMap.Add(device, CreateVoyagerInput_Device(device));
             }
-            else // removed
+            else
             {
-            }
-
-        }
-        private void TrySettingDevice(IInputController device)
-        {
-            if (device.Listener == null && device.WasUpdatedThisFrame)
-            {
-                IInputListener listener = requests[0];
-                device.SetListener(listener);
-                requests.Remove(listener);
+                if (deviceMap.ContainsKey(device))
+                    deviceMap.Remove(device);
             }
         }
-        public void RequestController(IInputListener listener)
+        public bool RequestController(InputUtility.RequestTypes requestType, HashSet<InputListener> listeners)
         {
-            if (!requests.Contains(listener))
+            foreach (KeyValuePair<IInputDevice, IInputController> kv in deviceMap)
             {
-                requests.Add(listener);
+                bool inputMatch = false;
+                switch (requestType)
+                {
+                    case InputUtility.RequestTypes.Any:
+                        inputMatch = true;
+                        break;
+                    case InputUtility.RequestTypes.Keyboard:
+                        inputMatch = kv.Value is Keyboard;
+                        break;
+                    case InputUtility.RequestTypes.Mouse:
+                        inputMatch = kv.Value is Mouse;
+                        break;
+                    case InputUtility.RequestTypes.Gamepad:
+                        inputMatch = kv.Value is Gamepad;
+                        break;
+                }
+                if (inputMatch && kv.Value.FrameInputs.Count > 0)
+                {
+                }
             }
-        }
-        internal void CancelRequest(IInputListener listener)
-        {
-            requests.Remove(listener);
+            return false;
         }
         private IInputController CreateVoyagerInput_Device(IInputDevice device)
         {

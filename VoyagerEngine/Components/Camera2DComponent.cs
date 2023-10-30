@@ -4,7 +4,7 @@ using VoyagerEngine.Services;
 
 namespace VoyagerEngine.Components
 {
-    public class CameraComponent : IComponent
+    public class Camera2DComponent : IComponent
     {
         public UpdateFlags UpdateFlag { get; set; }
         private Vector2 position;

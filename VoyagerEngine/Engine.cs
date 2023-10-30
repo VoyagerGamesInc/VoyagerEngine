@@ -122,8 +122,8 @@ namespace VoyagerEngine
         }
         private void Close()
         {
-            al.Dispose();
-            alContext.Dispose();
+            al?.Dispose();
+            alContext?.Dispose();
             imguiController?.Dispose();
             inputContext?.Dispose();
             gl?.Dispose();

@@ -1,4 +1,6 @@
 ﻿using Silk.NET.Input;
+using System.Numerics;
+
 namespace VoyagerEngine.Input
 {
     public enum InputStates
@@ -12,7 +14,7 @@ namespace VoyagerEngine.Input
     }
     public abstract class InputPayload : IInputPayload
     {
-        public string Name { get; private set; }
+        protected string Name { get; private set; }
         public InputStates State { get; private set; }
         public InputPayload(string name, InputStates state)
         {
@@ -20,24 +22,24 @@ namespace VoyagerEngine.Input
             State = state;
         }
     }
-    public class InputValue_Stick : InputPayload
+    public class InputPayloadStick : InputPayload
     {
-        public float X { get; private set; }
-        public float Y { get; private set; }
-        public InputValue_Stick(string name, float x, float y) : base(name, InputStates.Hold)
+        public new string Name => base.Name;
+        public Vector2 Value { get; private set; }
+        public InputPayloadStick(string name, Vector2 value) : base(name, InputStates.Hold)
         {
-            X = x;
-            Y = y;
+            Value = value;
         }
         public override string ToString()
         {
-            return $"Stick: {Name} - ({X},{Y}) - {State}";
+            return $"Stick: {Name} - ({Value.X},{Value.Y}) - {State}";
         }
     }
-    public class InputValue_Float : InputPayload
+    public class InputPayloadFloat : InputPayload
     {
+        public new string Name => base.Name;
         public float Value { get; private set; }
-        public InputValue_Float(string name, float value) : base(name, InputStates.Hold)
+        public InputPayloadFloat(string name, float value) : base(name, InputStates.Hold)
         {
             Value = value;
         }
@@ -46,10 +48,10 @@ namespace VoyagerEngine.Input
             return $"Float: {Name} - ({Value}) - {State}";
         }
     }
-    public class InputValue_Key : InputPayload
+    public class InputPayloadKey : InputPayload
     {
         public Key Key { get; private set; }
-        public InputValue_Key(Key key, bool pressed) : base(key.ToString(), pressed ? InputStates.Pressed : InputStates.Released)
+        public InputPayloadKey(Key key, bool pressed) : base(key.ToString(), pressed ? InputStates.Pressed : InputStates.Released)
         {
             Key = key;
         }
@@ -58,19 +60,22 @@ namespace VoyagerEngine.Input
             return $"Key: {Key} - {State}";
         }
     }
-    public class InputValue_Button : InputPayload
+    public class InputPayloadButton : InputPayload
     {
-        public InputValue_Button(string name, bool pressed) : base(name, pressed ? InputStates.Pressed : InputStates.Released)
+        public ButtonName ButtonName { get; private set; }
+        public InputPayloadButton(ButtonName name, bool pressed) : base(name.ToString(), pressed ? InputStates.Pressed : InputStates.Released)
         {
+            ButtonName = name;
         }
         public override string ToString()
         {
             return $"Button: {Name} - {State}";
         }
     }
-    public class InputValue_Char : InputPayload
+    public class InputPayloadChar : InputPayload
     {
-        public InputValue_Char(char name) : base(name.ToString(), InputStates.Pressed)
+        public new string Name => base.Name;
+        public InputPayloadChar(char name) : base(name.ToString(), InputStates.Pressed)
         {
         }
         public override string ToString()
