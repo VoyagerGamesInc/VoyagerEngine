@@ -11,7 +11,7 @@ namespace VoyagerEngine.Input
             Mouse,
             Gamepad
         }
-        public static bool HasKey(InputListener inputComponent, Key key)
+        public static bool HasKey(InputHandler inputComponent, Key key)
         {
             foreach (InputPayloadKey payload in inputComponent.FrameInputs.OfType<InputPayloadKey>())
             {

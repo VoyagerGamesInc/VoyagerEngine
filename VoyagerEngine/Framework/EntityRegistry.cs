@@ -1,6 +1,6 @@
 ﻿namespace VoyagerEngine.Framework
 {
-    public class EntityRegistry : ViewDeducer
+    public sealed class EntityRegistry : ViewDeducer
     {
         protected override HashSet<Entity> entities => entityRegistry;
         private HashSet<Entity> entityRegistry = new HashSet<Entity>();

@@ -2,7 +2,7 @@
 
 namespace VoyagerEngine.Services
 {
-    internal class IMGUIService : IService
+    internal sealed class IMGUIService : IService
     {
         public void Text()
         {

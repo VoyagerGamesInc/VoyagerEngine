@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace VoyagerEngine.Services
 {
-    public class AudioService : IService
+    public sealed class AudioService : IService
     {
         private unsafe class AudioPointers
         {

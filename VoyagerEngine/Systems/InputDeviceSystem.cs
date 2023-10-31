@@ -18,18 +18,6 @@ namespace VoyagerEngine.Systems
 
         public void Tick(in EntityRegistry registry)
         {
-            using (new ScopedPerf("InputDeviceSystem.Tick"))
-            {
-                registry.Exclude<DeviceOwnerComponent>().View<InputListenerComponent>(RequestController);
-                registry.Exclude<DeviceOwnerComponent>().View<InputListenerComponent>(RequestController);
-            }
-        }
-        private void RequestController(Entity entity, InputListenerComponent requestDeviceComponent)
-        {
-            if(inputService.RequestController(requestDeviceComponent.RequestType, requestDeviceComponent.Listeners))
-            {
-                entity.RemoveComponent<InputListenerComponent>();
-            }
         }
     }
 }

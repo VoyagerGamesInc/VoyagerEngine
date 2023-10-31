@@ -15,7 +15,7 @@ namespace VoyagerEngine.Services
         Camera = 8,
         Viewport = 16
     }
-    public class RenderService : IService
+    public sealed class RenderService : IService
     {
         private GL gl;
         private Dictionary<string, Shader> shaderMap = new();

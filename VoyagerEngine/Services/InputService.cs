@@ -5,7 +5,7 @@ using VoyagerEngine.Input;
 namespace VoyagerEngine.Services
 {
     [RequiresService(typeof(RenderService))]
-    public class InputService : IService
+    public sealed class InputService : IService
     {
         private IInputContext inputContext;
         private Dictionary<IInputDevice, IInputController> deviceMap = new();
@@ -42,7 +42,7 @@ namespace VoyagerEngine.Services
                     deviceMap.Remove(device);
             }
         }
-        public bool RequestController(InputUtility.RequestTypes requestType, HashSet<InputListener> listeners)
+        public bool RequestController(InputUtility.RequestTypes requestType, HashSet<InputHandler> handlers)
         {
             foreach (KeyValuePair<IInputDevice, IInputController> kv in deviceMap)
             {
