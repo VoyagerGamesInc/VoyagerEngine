@@ -2,7 +2,7 @@
 {
     public sealed class EntityRegistry : ViewDeducer
     {
-        protected override HashSet<Entity> entities => entityRegistry;
+        protected override IEnumerable<Entity> entities => entityRegistry;
         private HashSet<Entity> entityRegistry = new HashSet<Entity>();
 
         public static Entity CreateEntity()
@@ -12,7 +12,7 @@
         private Entity CreateEntity_Internal()
         {
             Entity entity = new Entity();
-            entities.Add(entity);
+            entityRegistry.Add(entity);
             return entity;
         }
         public static void RemoveEntity(Entity entity)
@@ -21,7 +21,7 @@
         }
         private void RemoveEntity_Internal(Entity entity)
         {
-            entities.Remove(entity);
+            entityRegistry.Remove(entity);
         }
     }
 }

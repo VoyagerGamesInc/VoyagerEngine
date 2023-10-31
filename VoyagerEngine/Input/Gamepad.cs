@@ -5,12 +5,10 @@ namespace VoyagerEngine.Input
 {
     internal class Gamepad : InputDevice<IGamepad>
     {
-        private Dictionary<int,float> triggers = new();
-        private Dictionary<int,Vector2> thumbsticks = new();
-        private HashSet<ButtonName> pressedButtons = new();
-        private HashSet<ButtonName> releasedButtons = new();
+        private Dictionary<ControlName, KeyControl> controls = new();
         internal Gamepad(IGamepad device) : base(device)
         {
+            device.Deadzone = new Deadzone(0.1f, DeadzoneMethod.Traditional);
             device.ButtonDown += Device_ButtonDown;
             device.ButtonUp += Device_ButtonUp;
             device.ThumbstickMoved += Device_ThumbstickMoved;
@@ -18,61 +16,61 @@ namespace VoyagerEngine.Input
         }
         protected override void Collect()
         {
-            foreach (ButtonName button in pressedButtons)
-            {
-                FrameInputs.Add(new InputPayloadButton(button, true));
-            }
-            foreach (ButtonName button in releasedButtons)
-            {
-                FrameInputs.Add(new InputPayloadButton(button, false));
-            }
-            foreach (KeyValuePair<int,float> kv in triggers)
-            {
-                FrameInputs.Add(new InputPayloadFloat(kv.Key.ToString(), kv.Value));
-                Debug.Log($"{kv.Key} / {kv.Key}");
-            }
-            foreach(KeyValuePair<int,Vector2> kv in thumbsticks)
-            {
-                FrameInputs.Add(new InputPayloadStick(kv.Key.ToString(), kv.Value));
-            }
-            pressedButtons.Clear();
-            releasedButtons.Clear();
-            triggers.Clear();
-            thumbsticks.Clear();
         }
 
         private void Device_TriggerMoved(IGamepad device, Trigger trigger)
         {
-            if (!triggers.ContainsKey(trigger.Index))
+            ControlName name = trigger.Index == 0 ? ControlName.LeftTrigger : ControlName.RightTrigger;
+            if (controls.TryGetValue(name, out KeyControl control))
             {
-                triggers.Add(trigger.Index,trigger.Position);
+                if(control is TriggerControl triggerControl)
+                {
+                    triggerControl.Value = trigger.Position;
+                }
             }
             else
             {
-                triggers[trigger.Index] = trigger.Position;
+                controls.Add(name, new TriggerControl(device, name, trigger.Position));
             }
         }
 
-        private void Device_ThumbstickMoved(IGamepad device, Thumbstick thumbstick)
+        private void Device_ThumbstickMoved(IGamepad device, Thumbstick stick)
         {
-            if (!thumbsticks.ContainsKey(thumbstick.Index))
+            ControlName name = stick.Index == 0 ? ControlName.LeftStick : ControlName.RightStick;
+            if (controls.TryGetValue(name, out KeyControl control))
             {
-                thumbsticks.Add(thumbstick.Index, new Vector2(thumbstick.X, thumbstick.Y));
+                if (control is StickControl stickControl)
+                {
+                    stickControl.Vector = new Vector2(stick.X,stick.Y);
+                }
             }
             else
             {
-                thumbsticks[thumbstick.Index] = new Vector2(thumbstick.X, thumbstick.Y);
+                controls.Add(name, new StickControl(device, name, stick.X, stick.Y));
             }
         }
 
         private void Device_ButtonUp(IGamepad device, Button button)
         {
-            pressedButtons.Add(button.Name);
+            //Debug.Log($"Device_ButtonUp: {device.Name} : {button.Index} : {button.Name} : {FromButtonName(button.Name)}");
+            ControlName name = FromButtonName(button.Name);
+            if (!controls.ContainsKey(name))
+            {
+                controls.Add(name, new ButtonControl(device, name, false));
+            }
         }
 
         private void Device_ButtonDown(IGamepad device, Button button)
         {
-            releasedButtons.Remove(button.Name);
+            ControlName name = FromButtonName(button.Name);
+            if (!controls.ContainsKey(name))
+            {
+                controls.Add(name, new ButtonControl(device, name, true));
+            }
+        }
+        private static ControlName FromButtonName(ButtonName buttonName)
+        {
+            return (ControlName)((int)buttonName + 1);
         }
     }
 }

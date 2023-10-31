@@ -2,7 +2,7 @@
 {
     public abstract partial class ViewDeducer
     {
-        protected abstract HashSet<Entity> entities { get; }
+        protected abstract IEnumerable<Entity> entities { get; }
         private void View_Internal(Func<Entity, bool> perEntity, HashSet<Type> components)
         {
             foreach (Entity entity in entities)
@@ -18,14 +18,14 @@
         }
         public ViewDeducer Exclude_Internal(HashSet<Type> components)
         {
-            return new ExcludedViewDeducer(entities.Where(entity => entity.ExcludesComponents(components)).ToHashSet());
+            return new ExcludedViewDeducer(entities.Where(entity => entity.ExcludesComponents(components)));
         }
     }
     internal class ExcludedViewDeducer : ViewDeducer
     {
-        protected override HashSet<Entity> entities => viewedEntities;
-        internal HashSet<Entity> viewedEntities;
-        internal ExcludedViewDeducer(HashSet<Entity> entities)
+        protected override IEnumerable<Entity> entities => viewedEntities;
+        internal IEnumerable<Entity> viewedEntities;
+        internal ExcludedViewDeducer(IEnumerable<Entity> entities)
         {
             viewedEntities = entities;
         }

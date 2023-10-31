@@ -1,6 +1,4 @@
-﻿using VoyagerEngine.Framework;
-
-namespace VoyagerEngine.Systems
+﻿namespace VoyagerEngine.Framework
 {
     public interface ITickingSystem : ISystem
     {

@@ -1,17 +1,14 @@
-﻿using Silk.NET.Input;
-using VoyagerEngine.Attributes;
-using VoyagerEngine.Components;
+﻿using VoyagerEngine.Attributes;
 using VoyagerEngine.Framework;
 using VoyagerEngine.Services;
-using VoyagerEngine.Utilities;
 
 namespace VoyagerEngine.Systems
 {
     [RequiresService(typeof(InputService))]
-    public class InputDeviceSystem : ITickingSystem
+    public class InputAssignerSystem : ITickingSystem
     {
         InputService inputService;
-        public InputDeviceSystem()
+        public InputAssignerSystem()
         {
             inputService = Engine.GetService<InputService>();
         }

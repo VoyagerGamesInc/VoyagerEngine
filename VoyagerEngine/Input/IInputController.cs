@@ -6,12 +6,12 @@ namespace VoyagerEngine.Input
     public interface IInputController
     {
         List<IInputPayload> FrameInputs { get; set; }
-        InputHandler Listener { get; set; }
+        ControlHandlerComponent Listener { get; set; }
         IInputDevice Device { get; }
     }
     internal abstract class InputDevice<T> : IInputController where T : IInputDevice
     {
-        public InputHandler Listener { get; set; }
+        public ControlHandlerComponent Listener { get; set; }
         public List<IInputPayload> FrameInputs { get; set; } = new();
         public IInputDevice Device => device;
 

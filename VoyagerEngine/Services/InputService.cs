@@ -1,5 +1,6 @@
 using Silk.NET.Input;
 using VoyagerEngine.Attributes;
+using VoyagerEngine.Framework;
 using VoyagerEngine.Input;
 
 namespace VoyagerEngine.Services
@@ -41,32 +42,6 @@ namespace VoyagerEngine.Services
                 if (deviceMap.ContainsKey(device))
                     deviceMap.Remove(device);
             }
-        }
-        public bool RequestController(InputUtility.RequestTypes requestType, HashSet<InputHandler> handlers)
-        {
-            foreach (KeyValuePair<IInputDevice, IInputController> kv in deviceMap)
-            {
-                bool inputMatch = false;
-                switch (requestType)
-                {
-                    case InputUtility.RequestTypes.Any:
-                        inputMatch = true;
-                        break;
-                    case InputUtility.RequestTypes.Keyboard:
-                        inputMatch = kv.Value is Keyboard;
-                        break;
-                    case InputUtility.RequestTypes.Mouse:
-                        inputMatch = kv.Value is Mouse;
-                        break;
-                    case InputUtility.RequestTypes.Gamepad:
-                        inputMatch = kv.Value is Gamepad;
-                        break;
-                }
-                if (inputMatch && kv.Value.FrameInputs.Count > 0)
-                {
-                }
-            }
-            return false;
         }
         private IInputController CreateVoyagerInput_Device(IInputDevice device)
         {

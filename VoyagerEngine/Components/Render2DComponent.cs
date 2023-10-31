@@ -8,7 +8,7 @@ using VoyagerEngine.Services;
 
 namespace VoyagerEngine.Components
 {
-    [IncludeComponent(typeof(InitializeRendererComponent))]
+    [IncludeComponent(typeof(InitializeRender2DComponent))]
     public class Render2DComponent : IComponent
     {
         public string ShaderName = Shader.DefaultSpriteShaderName;

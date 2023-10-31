@@ -2,7 +2,7 @@
 
 namespace VoyagerEngine.Components
 {
-    internal class InitializeRendererComponent : IComponent
+    internal class InitializeRender2DComponent : IComponent
     {
     }
 }

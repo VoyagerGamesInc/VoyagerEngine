@@ -5,7 +5,6 @@ using Silk.NET.Input;
 using Silk.NET.Windowing;
 using VoyagerEngine.Framework;
 using System.Reflection;
-using VoyagerEngine.Services;
 
 namespace VoyagerEngine
 {
@@ -100,7 +99,7 @@ namespace VoyagerEngine
             alContext = ALContext.GetApi();
             gl = window.CreateOpenGL();
             inputContext = window.CreateInput();
-            imguiController = new ImGuiController(gl, window, inputContext);
+            //imguiController = new ImGuiController(gl, window, inputContext);
             game.RegisterServices(gameServices);
             game.StartGame();
             gameServices.Init();

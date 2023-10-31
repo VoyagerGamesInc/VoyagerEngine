@@ -35,7 +35,7 @@ namespace VoyagerEngine.Systems
             renderService.Clear();
             registry.View<Viewport2DComponent>(CollectViewportUpdates);
             registry.View<Camera2DComponent>(CollectCameraUpdates);
-            registry.View<Render2DComponent, InitializeRendererComponent>(InitializeRenderer);
+            registry.View<Render2DComponent, InitializeRender2DComponent>(InitializeRenderer);
             registry.View<Render2DComponent, Position2DComponent>(UpdatePosition);
             Render();
         }
@@ -62,7 +62,7 @@ namespace VoyagerEngine.Systems
             uniformArgs.Clear();
         }
 
-        private void InitializeRenderer(Entity entity, Render2DComponent renderComponent, InitializeRendererComponent initializeFlag)
+        private void InitializeRenderer(Entity entity, Render2DComponent renderComponent, InitializeRender2DComponent initializeFlag)
         {
             renderService.GenerateVertexBuffer(renderComponent.Verts, out renderComponent.VAO, out renderComponent.VBO);
             renderService.GetProgram(renderComponent.ShaderName, out renderComponent.Program);
@@ -72,7 +72,7 @@ namespace VoyagerEngine.Systems
                 sortedComponents.Add(renderComponent.Program, hashSet);
             }
             hashSet.Add(renderComponent);
-            entity.RemoveComponent<InitializeRendererComponent>();
+            entity.RemoveComponent<InitializeRender2DComponent>();
         }
         public void UpdatePosition(Entity entity, Render2DComponent renderComponent, Position2DComponent position2DComponent)
         {
