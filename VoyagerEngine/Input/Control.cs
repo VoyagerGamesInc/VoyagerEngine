@@ -26,7 +26,7 @@ namespace VoyagerEngine.Input
         LeftTrigger,
         RightTrigger
     }
-    public class KeyControl : KeyControl
+    public class KeyControl : Control
     {
         public Key Key { get; set; }
         public KeyControl(IInputDevice device, ControlName name, Key key) : base(device, name)
@@ -34,7 +34,7 @@ namespace VoyagerEngine.Input
             Key = key;
         }
     }
-    public class ButtonControl : KeyControl
+    public class ButtonControl : Control
     {
         public bool Pressed { get; set; }
         public ButtonControl(IInputDevice device, ControlName name, bool pressed) : base(device, name)
@@ -42,7 +42,7 @@ namespace VoyagerEngine.Input
             Pressed = pressed;
         }
     }
-    public class StickControl : KeyControl
+    public class StickControl : Control
     {
         public Vector2 Vector { get; set; }
         public StickControl(IInputDevice device, ControlName name, float x, float y) : base(device, name)
@@ -51,7 +51,7 @@ namespace VoyagerEngine.Input
         }
     }
 
-    public class TriggerControl : KeyControl
+    public class TriggerControl : Control
     {
         public float Value { get; set; }
         public TriggerControl(IInputDevice device, ControlName name, float value) : base(device,name)
@@ -60,11 +60,11 @@ namespace VoyagerEngine.Input
         }
     }
 
-    public abstract class KeyControl
+    public abstract class Control
     {
         public IInputDevice Device { get; set; }
         public ControlName Name { get; }
-        public KeyControl(IInputDevice device, ControlName name)
+        public Control(IInputDevice device, ControlName name)
         {
             Device = device;
             Name = name;

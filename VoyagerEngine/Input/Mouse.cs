@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace VoyagerEngine.Input
 {
-    internal class Mouse : InputDevice<IMouse>
+    internal class Mouse : DeviceController<IMouse,IControlHandler>
     {
         internal Mouse(IMouse device) : base(device)
         {
@@ -17,11 +17,6 @@ namespace VoyagerEngine.Input
             device.Click += Device_Click;
             device.Scroll += Device_Scroll;
         }
-        protected override void Collect()
-        {
-
-        }
-
         private void Device_Click(IMouse device, MouseButton mouseButton, Vector2 position)
         {
         }

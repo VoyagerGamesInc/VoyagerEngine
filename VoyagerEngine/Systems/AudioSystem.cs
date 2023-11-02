@@ -1,6 +1,7 @@
 ﻿using Silk.NET.OpenAL;
 using System.Numerics;
 using VoyagerEngine.Components;
+using VoyagerEngine.Data;
 using VoyagerEngine.Framework;
 using VoyagerEngine.Rendering;
 using VoyagerEngine.Services;
@@ -13,23 +14,25 @@ namespace VoyagerEngine.Systems
         public AudioSystem()
         {
             audioService = Engine.GetService<AudioService>();
-
-            //Entity musicPlayerEntity = EntityRegistry.CreateEntity();
-            //AudioSourceComponent cmp = musicPlayerEntity.AddComponent<AudioSourceComponent>();
-            //cmp.Buffer = audioService.GenerateBuffer();
         }
 
         public void Tick(in EntityRegistry registry)
         {
-            registry.View<AudioSourceComponent, InitializeAudioSourceComponent>(InitializeAudioSource);
+            registry.View<InitializeAudioSourceComponent>(InitializeAudioSource);
         }
-        private void InitializeAudioSource(Entity entity, AudioSourceComponent cmp, InitializeAudioSourceComponent initializeFlag)
+        private void InitializeAudioSource(Entity entity, InitializeAudioSourceComponent initializeAudioComponent)
         {
-            cmp.Source = audioService.GenerateSource();
-            audioService.SetSourceProperty(cmp.Source, SourceFloat.Pitch, cmp.Pitch);
-            audioService.SetSourceProperty(cmp.Source, SourceFloat.Gain, cmp.Gain);
-            audioService.SeSetSourceProperty(cmp.Source, SourceVector3.Position, new Vector3());
-            audioService.Play(cmp.Source, cmp.Buffer);
+            IAudioData audioData = new AudioSourceData();
+            audioData.Source = audioService.GenerateSource();
+            audioData.Buffer = audioService.GenerateBuffer(initializeAudioComponent.ResourceName);
+
+            audioService.SetSourceProperty(audioData.Source, SourceFloat.Pitch, 1);
+            audioService.SetSourceProperty(audioData.Source, SourceFloat.Gain, 1);
+            audioService.SeSetSourceProperty(audioData.Source, SourceVector3.Position, new Vector3());
+            audioService.Play(audioData.Source, audioData.Buffer);
+
+            AudioSourceComponent audioSourceComponent = entity.AddComponent<AudioSourceComponent>();
+            audioSourceComponent.Data = audioData;
             entity.RemoveComponent<InitializeAudioSourceComponent>();
         }
     }

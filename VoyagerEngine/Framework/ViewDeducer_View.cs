@@ -34,6 +34,11 @@
                 return viewEntityBreak(entity, entity.GetComponent<T1>());
             }, new HashSet<Type>() { typeof(T1) });
         }
+        public ViewDeducer Exclude<T1>()
+            where T1 : class, IComponent, new()
+        {
+            return Exclude_Internal(new HashSet<Type>() { typeof(T1) });
+        }
 
         // 2 Components
         public void View<T1, T2>(Action<T1, T2> view)
@@ -70,6 +75,12 @@
             {
                 return viewEntityBreak(entity, entity.GetComponent<T1>(), entity.GetComponent<T2>());
             }, new HashSet<Type>() { typeof(T2), typeof(T1) });
+        }
+        public ViewDeducer Exclude<T1, T2>()
+            where T1 : class, IComponent, new()
+            where T2 : class, IComponent, new()
+        {
+            return Exclude_Internal(new HashSet<Type>() { typeof(T2), typeof(T1) });
         }
 
 
@@ -112,6 +123,13 @@
             {
                 return viewEntityBreak(entity, entity.GetComponent<T1>(), entity.GetComponent<T2>(), entity.GetComponent<T3>());
             }, new HashSet<Type>() { typeof(T3), typeof(T2), typeof(T1) });
+        }
+        public ViewDeducer Exclude<T1, T2, T3>()
+            where T1 : class, IComponent, new()
+            where T2 : class, IComponent, new()
+            where T3 : class, IComponent, new()
+        {
+            return Exclude_Internal(new HashSet<Type>() { typeof(T3), typeof(T2), typeof(T1) });
         }
     }
 }

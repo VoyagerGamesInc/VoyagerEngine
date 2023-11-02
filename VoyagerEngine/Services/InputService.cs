@@ -1,20 +1,26 @@
 using Silk.NET.Input;
-using VoyagerEngine.Attributes;
+using Silk.NET.OpenAL;
 using VoyagerEngine.Framework;
 using VoyagerEngine.Input;
 
 namespace VoyagerEngine.Services
 {
-    [RequiresService(typeof(RenderService))]
     public sealed class InputService : IService
     {
         private IInputContext inputContext;
-        private Dictionary<IInputDevice, IInputController> deviceMap = new();
+        private HashSet<Controller> idleControllers = new();
+        private HashSet<IInputDevice> foundDevices = new();
+        private Queue<IControllerRequest> requestQueue = new();
         public InputService()
         {
             inputContext = Engine.GetInputContext();
             Engine.GetInputContext().ConnectionChanged += OnDeviceChange;
             CollectDevices();
+        }
+        internal void RequestController(IControllerRequest request)
+        {
+            if(!requestQueue.Contains(request))
+                requestQueue.Enqueue(request);
         }
         private void CollectDevices()
         {
@@ -22,28 +28,53 @@ namespace VoyagerEngine.Services
             devices.AddRange(inputContext.Keyboards);
             devices.AddRange(inputContext.Mice);
             devices.AddRange(inputContext.Gamepads);
-            devices.AddRange(inputContext.Joysticks);
             foreach (IInputDevice device in devices)
             {
-                if (!deviceMap.ContainsKey(device))
-                    deviceMap.Add(device, CreateVoyagerInput_Device(device));
+                TryAddDevice(device);
             }
+        }
+        private void TryAddDevice(IInputDevice device)
+        {
+
+            if (!foundDevices.Contains(device))
+            {
+                foundDevices.Add(device);
+                Controller controller = CreateController(device);
+                QueueControllerForRequests(controller);
+            }
+        }
+        private void QueueControllerForRequests(Controller controller)
+        {
+            controller.AssignedEntity.Reset();
+            controller.OnAnyInput += OnAnyInput;
+            idleControllers.Add(controller);
+        }
+        private void OnAnyInput(Controller controller)
+        {
+            if(requestQueue.TryPeek(out IControllerRequest request)) {
+                if(request.ControllerType == controller.Device.GetType())
+                {
+                    controller.AssignedEntity = request.EntityId;
+                }
+            }
+        }
+        private void UnregisterDevice(IInputDevice device)
+        {
+
         }
 
         private void OnDeviceChange(IInputDevice device, bool added)
         {
             if (added)
             {
-                if (!deviceMap.ContainsKey(device))
-                    deviceMap.Add(device, CreateVoyagerInput_Device(device));
+                TryAddDevice(device);
             }
             else
             {
-                if (deviceMap.ContainsKey(device))
-                    deviceMap.Remove(device);
+                UnregisterDevice(device);
             }
         }
-        private IInputController CreateVoyagerInput_Device(IInputDevice device)
+        private Controller CreateController(IInputDevice device)
         {
             switch (device)
             {

@@ -2,14 +2,14 @@
 
 namespace VoyagerEngine.Rendering
 {
-    public struct Shader
+    public struct ShaderData
     {
         public const string DefaultSpriteShaderName = "Sprite";
         public string Name { get; private set; }
         public string VertPath { get; private set; }
         public string FragPath { get; private set; }
         public uint Program {  get; private set; }
-        public Shader(string name, string vertPath, string fragPath)
+        public ShaderData(string name, string vertPath, string fragPath)
         {
             Name = name;
             VertPath = vertPath;
@@ -28,9 +28,9 @@ namespace VoyagerEngine.Rendering
             return Resources.Read(FragPath);
         }
 
-        internal static Shader DefaultSpriteShader()
+        internal static ShaderData DefaultSpriteShader()
         {
-            return new Shader
+            return new ShaderData
             {
                 Name = DefaultSpriteShaderName,
                 VertPath = "VoyagerEngine.Rendering.GLSL.vert.glsl",

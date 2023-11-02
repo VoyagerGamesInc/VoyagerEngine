@@ -2,24 +2,25 @@
 using System.Drawing;
 using System.Numerics;
 using VoyagerEngine.Framework;
-using Shader = VoyagerEngine.Rendering.Shader;
+using ShaderData = VoyagerEngine.Rendering.ShaderData;
 
 namespace VoyagerEngine.Services
 {
     [Flags]
     public enum UpdateFlags
     {
-        None = 0,
-        Texture = 1,
-        Position = 2,
-        Verts = 4,
-        Camera = 8,
-        Viewport = 16
+        None =      0,
+        Buffer =    1,
+        Texture =   1<<1,
+        Color =     1<<2,
+        Position =  1<<3,
+        Camera =    1<<4,
+        Viewport =  1<<5
     }
     public sealed class RenderService : IService
     {
         private GL gl;
-        private Dictionary<string, Shader> shaderMap = new();
+        private Dictionary<string, ShaderData> shaderMap = new();
         private HashSet<uint> programs = new();
 
         public RenderService()
@@ -34,7 +35,7 @@ namespace VoyagerEngine.Services
         {
             gl.Clear(ClearBufferMask.ColorBufferBit);
         }
-        internal void RegisterShader(Shader shader)
+        internal void RegisterShader(ShaderData shader)
         {
             uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
             gl.ShaderSource(vertexShader, shader.GetVert());
@@ -87,22 +88,24 @@ namespace VoyagerEngine.Services
             gl.BindVertexArray(vao);
             gl.DrawArrays(GLEnum.TriangleFan, 0, 4);
         }
-        public unsafe void GenerateVertexBuffer(float[] data, out uint vao, out uint vbo)
+        public unsafe void GenerateVertexBuffer(float[] data, BufferUsageARB usageHint, out uint vao, out uint vbo)
         {
             vao = gl.GenVertexArray();
             gl.BindVertexArray(vao);
 
             vbo = gl.GenBuffer();
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
-            gl.BufferData(BufferTargetARB.ArrayBuffer, new ReadOnlySpan<float>(data), BufferUsageARB.StaticDraw);
+            gl.BufferData(BufferTargetARB.ArrayBuffer, new ReadOnlySpan<float>(data), usageHint);
 
             const uint vertLoc = 0;
             gl.EnableVertexAttribArray(vertLoc);
             gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), (void*)0);
+            //gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)0);
 
             const uint colorLoc = 1;
             gl.EnableVertexAttribArray(colorLoc);
             gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), (void*)(8 * sizeof(float)));
+            //gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)(2 * sizeof(float)));
 
             gl.BindVertexArray(0);
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
@@ -112,23 +115,29 @@ namespace VoyagerEngine.Services
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
             gl.BufferSubData(BufferTargetARB.ArrayBuffer, 0, new ReadOnlySpan<float>(vertex));
         }
+        public void SetUniform(string name, uint program, float data)
+        {
+            int loc = gl.GetUniformLocation(program, name);
+            if (loc != -1)
+                gl.Uniform1(loc, data);
+        }
         public void SetUniform(string name, uint program, Vector2 data)
         {
             int loc = gl.GetUniformLocation(program, name);
             if (loc != -1)
                 gl.Uniform2(loc, ref data);
         }
-        public void SeVertexAttrib(string name, uint program, Vector2 data)
+        public void SetUniform(string name, uint program, Vector3 data)
         {
-            int loc = gl.GetAttribLocation(program, name);
+            int loc = gl.GetUniformLocation(program, name);
             if (loc != -1)
-                gl.VertexAttrib2((uint)loc, ref data);
+                gl.Uniform3(loc, ref data);
         }
-        public void SetVertexAttrib(string name, uint program, Vector4 data)
+        public void SetUniform(string name, uint program, Vector4 data)
         {
-            int loc = gl.GetAttribLocation(program, name);
+            int loc = gl.GetUniformLocation(program, name);
             if (loc != -1)
-                gl.VertexAttrib4((uint)loc, ref data);
+                gl.Uniform4(loc, ref data);
         }
         public void GenerateTexture(string resourcePath)
         {

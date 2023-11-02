@@ -51,7 +51,7 @@ namespace VoyagerEngine.Services
         {
             return al.GenSource();
         }
-        public uint GenerateBuffer(string resourceName = "MysteryDungeon.Audio.avatar_theme.mp3")
+        public uint GenerateBuffer(string resourceName)
         {
             using (var mp3Reader = new Mp3FileReader(Engine.LoadResource(resourceName)))
             {

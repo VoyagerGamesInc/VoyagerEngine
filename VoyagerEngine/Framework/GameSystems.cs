@@ -1,7 +1,4 @@
-﻿using VoyagerEngine.Attributes;
-using VoyagerEngine.Rendering;
-
-namespace VoyagerEngine.Framework
+﻿namespace VoyagerEngine.Framework
 {
     public class GameSystems
     {
@@ -40,7 +37,6 @@ namespace VoyagerEngine.Framework
         }
         public void RegisterSystem<T>() where T : class, ISystem, new()
         {
-            GameServices.CheckIfServiceExists<T, RequiresServiceAttribute>();
             if (typeof(T).IsAssignableTo(typeof(ITickingSystem)))
             {
                 tickingSystems.Add(new T() as ITickingSystem);

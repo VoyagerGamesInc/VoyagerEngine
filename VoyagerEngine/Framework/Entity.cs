@@ -1,29 +1,21 @@
-﻿using VoyagerEngine.Attributes;
-
-namespace VoyagerEngine.Framework
+﻿namespace VoyagerEngine.Framework
 {
     public class Entity
     {
+        public EntityId Id { get; internal set; }
         internal Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
         public T AddComponent<T>() where T : class, IComponent, new()
         {
-            if (!Components.TryGetValue(typeof(T), out IComponent component))
+            Type t = typeof(T);
+            if (Components.TryGetValue(t, out IComponent component))
             {
-                component = new T();
-                Components.Add(typeof(T), component);
-                if (Attribute.IsDefined(typeof(T), typeof(IncludeComponentAttribute)))
-                {
-                    IncludeComponentAttribute attribute = (IncludeComponentAttribute)typeof(T).GetCustomAttributes(typeof(IncludeComponentAttribute), false)[0];
-                    foreach (Type t in attribute.Components)
-                    {
-                        if(typeof(IComponent).IsAssignableFrom(t))
-                        {
-                            Components.Add(t, Activator.CreateInstance(t) as IComponent);
-                        }
-                    }
-                }
+                return component as T;
             }
-            return (T)component;
+            
+            T addComponent = new T();
+            Components.Add(typeof(T), addComponent);
+
+            return addComponent;
         }
         public bool HasComponent<T>() where T : class, IComponent, new()
         {

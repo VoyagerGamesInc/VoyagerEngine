@@ -1,7 +1,7 @@
 using Silk.NET.Input;
 namespace VoyagerEngine.Input
 {
-    internal class Keyboard : InputDevice<IKeyboard>
+    internal class Keyboard : DeviceController<IKeyboard,KeyHandler>
     {
         private HashSet<Key> heldKeys = new();
         private HashSet<char> chars = new();
@@ -11,10 +11,6 @@ namespace VoyagerEngine.Input
             device.KeyUp += Device_KeyUp;
             device.KeyChar += Device_KeyChar;
         }
-        protected override void Collect()
-        {
-        }
-
         private void Device_KeyChar(IKeyboard device, char character)
         {
             //FrameInputs.Add(character,new InputPayloadChar(character));

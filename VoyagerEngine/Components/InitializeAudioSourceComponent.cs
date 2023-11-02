@@ -1,8 +1,10 @@
-﻿using VoyagerEngine.Framework;
+﻿using VoyagerEngine.Data;
+using VoyagerEngine.Framework;
 
 namespace VoyagerEngine.Components
 {
-    internal class InitializeAudioSourceComponent : IComponent
+    public class InitializeAudioSourceComponent : IComponent
     {
+        public string ResourceName;
     }
 }

@@ -1,7 +1,4 @@
-﻿using VoyagerEngine.Attributes;
-using VoyagerEngine.Framework;
-
-namespace VoyagerEngine
+﻿namespace VoyagerEngine.Framework
 {
     public class GameServices
     {
@@ -20,7 +17,6 @@ namespace VoyagerEngine
             Type serviceType = typeof(T);
             if (!services.ContainsKey(serviceType))
             {
-                CheckIfServiceExists<T, RequiresServiceAttribute>();
                 services.Add(serviceType, new T());
             }
         }
@@ -35,22 +31,6 @@ namespace VoyagerEngine
         internal bool HasService(Type type)
         {
             return services.ContainsKey(type);
-        }
-        internal bool HasServices(Type[] services)
-        {
-            HashSet<Type> hashSet = services.ToHashSet();
-            return hashSet.All(this.services.ContainsKey);
-        }
-        internal static void CheckIfServiceExists<T, A>() where A : RequiresServiceAttribute
-        {
-            if (Attribute.IsDefined(typeof(T), typeof(RequiresServiceAttribute)))
-            {
-                RequiresServiceAttribute attribute = (RequiresServiceAttribute)typeof(T).GetCustomAttributes(typeof(RequiresServiceAttribute), false)[0];
-                foreach (var service in attribute.Services)
-                {
-                    Debug.Assert(Engine.HasService(service), $"Service dependency for {typeof(T).Name} is missing: {service.Name}");
-                }
-            }
         }
     }
 }
