@@ -1,6 +1,6 @@
 ﻿using Silk.NET.OpenAL;
-using Silk.NET.OpenGL;
-using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.OpenGLES;
+using Silk.NET.OpenGLES.Extensions.ImGui;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 using VoyagerEngine.Framework;
@@ -97,7 +97,7 @@ namespace VoyagerEngine
         {
             al = AL.GetApi();
             alContext = ALContext.GetApi();
-            gl = window.CreateOpenGL();
+            gl = window.CreateOpenGLES();
             inputContext = window.CreateInput();
             //imguiController = new ImGuiController(gl, window, inputContext);
             game.RegisterServices(gameServices);

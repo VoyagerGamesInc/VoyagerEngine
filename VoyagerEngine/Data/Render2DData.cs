@@ -11,6 +11,7 @@ namespace VoyagerEngine.Data
         uint IRenderData.Program { get; set; }
         uint IRenderData.VAO { get; set; }
         uint IRenderData.VBO { get; set; }
+        uint IRenderData.EBO { get; set; }
         float[] IRenderData.Buffer => Buffer;
 
         public Color Color
