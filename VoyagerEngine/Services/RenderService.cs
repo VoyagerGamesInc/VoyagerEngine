@@ -99,13 +99,11 @@ namespace VoyagerEngine.Services
 
             const uint vertLoc = 0;
             gl.EnableVertexAttribArray(vertLoc);
-            gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), (void*)0);
-            //gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)0);
+            gl.VertexAttribPointer(vertLoc, 2, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)0);
 
             const uint colorLoc = 1;
             gl.EnableVertexAttribArray(colorLoc);
-            gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), (void*)(8 * sizeof(float)));
-            //gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)(2 * sizeof(float)));
+            gl.VertexAttribPointer(colorLoc, 4, VertexAttribPointerType.Float, false, 6 * sizeof(float), (void*)(2 * sizeof(float)));
 
             gl.BindVertexArray(0);
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);

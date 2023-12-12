@@ -36,6 +36,7 @@ namespace VoyagerEngine.Systems
             registry.View<Camera2DComponent>(CollectCameraUpdates);
             registry.View<InitializeRender2DComponent>(InitializeRenderer);
             registry.View<Render2DComponent, Position2DComponent>(UpdatePosition);
+            //registry.View<Render2DComponent>(RenderComponent);
             Render();
         }
         public void Render()
@@ -43,22 +44,27 @@ namespace VoyagerEngine.Systems
             foreach (KeyValuePair<uint, HashSet<Render2DComponent>> kv in sortedComponents)
             {
                 renderService.UseProgram(kv.Key);
-                foreach(IUniformArgs args in uniformArgs)
+                foreach (IUniformArgs args in uniformArgs)
                 {
                     switch (args)
                     {
                         case UniformArgs<Vector2> vector2:
-                            renderService.SetUniform(vector2.Name,kv.Key,vector2.Value);
+                            renderService.SetUniform(vector2.Name, kv.Key, vector2.Value);
                             break;
                     }
                 }
-                foreach(Render2DComponent renderComponent in kv.Value)
+                foreach (Render2DComponent renderComponent in kv.Value)
                 {
                     UpdateComponentVariables(renderComponent, renderService);
                     renderService.DrawQuad(renderComponent.Data.VAO);
                 }
             }
             uniformArgs.Clear();
+        }
+        private void RenderComponent(Entity entity, Render2DComponent renderComponent)
+        {
+            renderService.UseProgram(renderComponent.Data.Program);
+            renderService.DrawQuad(renderComponent.Data.VAO);
         }
 
         private void InitializeRenderer(Entity entity, InitializeRender2DComponent initializeRenderComponent)
